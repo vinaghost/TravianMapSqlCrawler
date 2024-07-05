@@ -1,9 +1,9 @@
 {
   "profiles": {
-    "Docker.Net": {
+    "ConsoleApplication": {
       "commandName": "Project",
       "environmentVariables": {
-        "ASPNETCORE_ENVIRONMENT": "Development"
+        "DOTNET_ENVIRONMENT": "Development"
       }
     }
   }

@@ -12,9 +12,9 @@ namespace ConsoleApplication.DbContexts
         public DbSet<PlayerPopulationHistory> PlayerPopulationHistory { get; set; }
         public DbSet<PlayerAllianceHistory> PlayerAllianceHistory { get; set; }
 
-        private static DbContextOptions<ServerDbContext> GetOptions(string connectionString, string database)
+        private static DbContextOptions<VillageDbContext> GetOptions(string connectionString, string database)
         {
-            var optionsBuilder = new DbContextOptionsBuilder<ServerDbContext>();
+            var optionsBuilder = new DbContextOptionsBuilder<VillageDbContext>();
             optionsBuilder
 #if DEBUG
                 .EnableSensitiveDataLogging()
