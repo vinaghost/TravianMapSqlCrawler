@@ -1,0 +1,10 @@
+{
+  "profiles": {
+    "Docker.Net": {
+      "commandName": "Project",
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development"
+      }
+    }
+  }
+}
