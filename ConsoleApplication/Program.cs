@@ -9,6 +9,7 @@ builder.Services.AddSerilog((services, loggerConfiguration) => loggerConfigurati
     .ReadFrom.Configuration(builder.Configuration)
     .Enrich.FromLogContext()
     .WriteTo.Console());
+
 builder.Services.AddHostedService<StartUp>();
 
 var host = builder.Build();

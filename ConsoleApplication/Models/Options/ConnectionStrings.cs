@@ -2,7 +2,7 @@
 {
     public sealed class ConnectionStrings
     {
-        public string First { get; set; } = "";
-        public string Second { get; set; } = "";
+        public string Server { get; set; } = "";
+        public string Village { get; set; } = "";
     }
 }
