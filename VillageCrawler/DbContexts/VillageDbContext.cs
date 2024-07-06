@@ -1,7 +1,7 @@
-﻿using ConsoleApplication.Entities;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
+using VillageCrawler.Entities;
 
-namespace ConsoleApplication.DbContexts
+namespace VillageCrawler.DbContexts
 {
     public class VillageDbContext(string connectionString, string database) : DbContext(GetOptions(connectionString, database))
     {

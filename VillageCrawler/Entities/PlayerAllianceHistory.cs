@@ -1,6 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 
-namespace ConsoleApplication.Entities
+namespace VillageCrawler.Entities
 {
     [Index(nameof(PlayerId), nameof(Date))]
     public class PlayerAllianceHistory

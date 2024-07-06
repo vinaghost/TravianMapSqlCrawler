@@ -1,7 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using System.ComponentModel.DataAnnotations.Schema;
 
-namespace ConsoleApplication.Entities
+namespace VillageCrawler.Entities
 {
     [Index(nameof(Name))]
     [Index(nameof(X), nameof(Y))]

@@ -1,4 +1,4 @@
-﻿namespace ConsoleApplication.Models.Options
+﻿namespace VillageCrawler.Models.Options
 {
     public sealed class ConnectionStrings
     {

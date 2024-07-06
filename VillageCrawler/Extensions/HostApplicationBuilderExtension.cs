@@ -1,8 +1,8 @@
-﻿using ConsoleApplication.Models.Options;
-using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using VillageCrawler.Models.Options;
 
-namespace ConsoleApplication
+namespace VillageCrawler.Extensions
 {
     public static class HostApplicationBuilderExtension
     {
