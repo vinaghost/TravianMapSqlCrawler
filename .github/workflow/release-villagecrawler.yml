@@ -1,10 +1,8 @@
 # secrets required:
 # DOCKERHUB_USERNAME
 # DOCKERHUB_TOKEN
-# DOCKERHUB_REPOSITORY
 
-name: Release Docker inside build
-run-name: Build and push update image
+name: Build and push Village Crawler image
 on:
   workflow_dispatch:
 jobs:
@@ -26,11 +24,9 @@ jobs:
       - name: Build and push update image
         uses: docker/build-push-action@v6
         with:
-          file: ./Docker.Net/BuildInside/Dockerfile
+          file: ./VillageCrawler/Dockerfile
           context: .
           push: true
-          tags: ${{ secrets.DOCKERHUB_USERNAME }}/${{ secrets.DOCKERHUB_REPOSITORY }}:latest
+          tags: ${{ secrets.DOCKERHUB_USERNAME }}/villagecrawler:latest
           cache-from: type=gha
           cache-to: type=gha,mode=max
-
-     
