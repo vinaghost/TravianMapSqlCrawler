@@ -1,6 +1,7 @@
 ﻿using MediatR;
 using Microsoft.EntityFrameworkCore;
 using VillageCrawler.DbContexts;
+using VillageCrawler.Entities;
 using VillageCrawler.Extensions;
 using VillageCrawler.Models;
 
@@ -14,35 +15,39 @@ namespace VillageCrawler.Commands
         {
             var context = request.Context;
             var villages = request.VillageRaws
-                .Select(x => x.GetVillage());
-            await context.BulkSynchronizeAsync(villages, options => options.SynchronizeKeepidentity = true, cancellationToken);
+                .Select(x => x.GetVillage())
+                .ToDictionary(x => x.Id, x => x);
 
             var today = DateTime.Today;
-            if (!await context.VillagePopulationHistory.AnyAsync(x => x.Date == today, cancellationToken))
+
+            if (!await context.VillagesHistory.AnyAsync(x => x.Date == EF.Constant(today), cancellationToken))
             {
-                var yesterday = today.AddDays(-1);
-                var populationHistory = await context.VillagePopulationHistory
-                    .Where(x => x.Date == yesterday)
+                var oldVillages = context.Villages
                     .Select(x => new
                     {
-                        x.VillageId,
-                        x.Population
+                        x.Id,
+                        x.Population,
                     })
-                    .OrderBy(x => x.VillageId)
-                    .ToListAsync(cancellationToken);
-
-                var populations = villages
-                    .Select(x => x.GetVillagePopulation(DateTime.Today))
+                    .AsEnumerable()
+                    .Select(x => new VillageHistory
+                    {
+                        VillageId = x.Id,
+                        Date = today,
+                        Population = x.Population,
+                    })
                     .ToList();
 
-                foreach (var population in populations)
+                foreach (var player in oldVillages)
                 {
-                    var history = populationHistory.Find(x => x.VillageId == population.VillageId);
-                    if (history is null) { continue; }
-                    population.Change = population.Population - history.Population;
+                    var exist = villages.TryGetValue(player.Id, out var todayVillage);
+                    if (!exist) { continue; }
+                    player.ChangePopulation = todayVillage?.Population == player.Population;
                 }
-                await context.BulkInsertAsync(populations, cancellationToken);
+
+                await context.BulkInsertOptimizedAsync(oldVillages, cancellationToken);
             }
+
+            await context.BulkSynchronizeAsync(villages.Values, options => options.SynchronizeKeepidentity = true, cancellationToken);
         }
     }
 }

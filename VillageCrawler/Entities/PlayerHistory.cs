@@ -3,7 +3,9 @@
 namespace VillageCrawler.Entities
 {
     [Index(nameof(PlayerId), nameof(Date))]
-    public class PlayerPopulationHistory
+    [Index(nameof(PlayerId), nameof(ChangePopulation))]
+    [Index(nameof(PlayerId), nameof(ChangeAlliance))]
+    public class PlayerHistory
     {
         public int Id { get; set; }
 
@@ -11,8 +13,12 @@ namespace VillageCrawler.Entities
 
         public DateTime Date { get; set; }
 
+        public int AllianceId { get; set; }
+
+        public bool ChangeAlliance { get; set; }
+
         public int Population { get; set; }
 
-        public int Change { get; set; }
+        public bool ChangePopulation { get; set; }
     }
 }

@@ -10,7 +10,7 @@ namespace VillageCrawler.Entities
         [DatabaseGenerated(DatabaseGeneratedOption.None)]
         public int Id { get; set; }
 
-        public ICollection<VillagePopulationHistory> Populations { get; set; } = [];
+        public ICollection<VillageHistory> History { get; set; } = [];
 
         public int MapId { get; set; }
 

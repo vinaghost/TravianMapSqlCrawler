@@ -6,11 +6,11 @@ namespace VillageCrawler.DbContexts
     public class VillageDbContext(string connectionString, string database) : DbContext(GetOptions(connectionString, database))
     {
         public DbSet<Alliance> Alliances { get; set; }
+        public DbSet<AllianceHistory> AlliancesHistory { get; set; }
         public DbSet<Player> Players { get; set; }
+        public DbSet<PlayerHistory> PlayersHistory { get; set; }
         public DbSet<Village> Villages { get; set; }
-        public DbSet<VillagePopulationHistory> VillagePopulationHistory { get; set; }
-        public DbSet<PlayerPopulationHistory> PlayerPopulationHistory { get; set; }
-        public DbSet<PlayerAllianceHistory> PlayerAllianceHistory { get; set; }
+        public DbSet<VillageHistory> VillagesHistory { get; set; }
 
         private static DbContextOptions<VillageDbContext> GetOptions(string connectionString, string database)
         {

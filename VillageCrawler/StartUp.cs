@@ -8,6 +8,7 @@ using System.Collections.Concurrent;
 using System.Diagnostics;
 using VillageCrawler.Commands;
 using VillageCrawler.Entities;
+using VillageCrawler.Extensions;
 using VillageCrawler.Models.Options;
 
 namespace VillageCrawler
@@ -67,9 +68,9 @@ namespace VillageCrawler
             var transaction = await context.Database.BeginTransactionAsync(cancellationToken);
             try
             {
-                await _mediator.Send(new UpdateAllianceCommand(context, villages), cancellationToken);
-                await _mediator.Send(new UpdatePlayerCommand(context, villages), cancellationToken);
-                await _mediator.Send(new UpdateVillageCommand(context, villages), cancellationToken);
+                await context.UpdateAlliance(villages, cancellationToken);
+                await context.UpdatePlayer(villages, cancellationToken);
+                await context.UpdateVillage(villages, cancellationToken);
                 await transaction.CommitAsync(cancellationToken);
             }
             catch (Exception e)
@@ -77,6 +78,7 @@ namespace VillageCrawler
                 _logger.LogError(e, "{Message}", e.Message);
                 await transaction.RollbackAsync(cancellationToken);
             }
+
             var allianceCount = await context.Alliances.CountAsync(cancellationToken: cancellationToken);
             var playerCount = await context.Players.CountAsync(cancellationToken: cancellationToken);
             var villageCount = await context.Villages.CountAsync(cancellationToken: cancellationToken);

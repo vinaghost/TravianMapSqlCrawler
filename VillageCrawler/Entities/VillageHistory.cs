@@ -3,7 +3,8 @@
 namespace VillageCrawler.Entities
 {
     [Index(nameof(VillageId), nameof(Date))]
-    public class VillagePopulationHistory
+    [Index(nameof(VillageId), nameof(ChangePopulation))]
+    public class VillageHistory
     {
         public int Id { get; set; }
 
@@ -13,6 +14,6 @@ namespace VillageCrawler.Entities
 
         public int Population { get; set; }
 
-        public int Change { get; set; }
+        public bool ChangePopulation { get; set; }
     }
 }

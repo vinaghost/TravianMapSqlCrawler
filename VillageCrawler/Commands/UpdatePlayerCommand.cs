@@ -1,8 +1,7 @@
-﻿using VillageCrawler.Entities;
-using VillageCrawler.Extensions;
-using MediatR;
+﻿using MediatR;
 using Microsoft.EntityFrameworkCore;
 using VillageCrawler.DbContexts;
+using VillageCrawler.Entities;
 using VillageCrawler.Models;
 
 namespace VillageCrawler.Commands
@@ -23,69 +22,42 @@ namespace VillageCrawler.Commands
                    AllianceId = x.First().AllianceId,
                    Population = x.Sum(x => x.Population),
                    VillageCount = x.Count(),
-               });
-
-            await context.BulkSynchronizeAsync(players, options => options.SynchronizeKeepidentity = true, cancellationToken);
+               })
+               .ToDictionary(x => x.Id, x => x);
 
             var today = DateTime.Today;
-            var yesterday = today.AddDays(-1);
 
-            if (!await context.PlayerAllianceHistory.AnyAsync(x => x.Date == today, cancellationToken))
+            if (!await context.PlayersHistory.AnyAsync(x => x.Date == EF.Constant(today), cancellationToken))
             {
-                var allianceHistory = await context.PlayerAllianceHistory
-                    .Where(x => x.Date == yesterday)
+                var oldPlayers = context.Players
                     .Select(x => new
                     {
-                        x.PlayerId,
-                        x.AllianceId
+                        x.Id,
+                        x.AllianceId,
+                        x.Population,
                     })
-                    .OrderBy(x => x.PlayerId)
-                    .ToListAsync(cancellationToken);
-                var alliances = players
-                    .Select(x => x.GetPlayerAlliance(today));
-
-                foreach (var alliance in alliances)
-                {
-                    var history = allianceHistory.Find(x => x.PlayerId == alliance.PlayerId);
-                    if (history is null) { continue; }
-                    if (history.AllianceId == alliance.AllianceId)
+                    .AsEnumerable()
+                    .Select(x => new PlayerHistory
                     {
-                        alliance.Change = 0;
-                    }
-                    else
-                    {
-                        alliance.Change = 1;
-                    }
-                }
-
-                await context.BulkInsertAsync(alliances, cancellationToken);
-            }
-
-            if (!await context.PlayerPopulationHistory.AnyAsync(x => x.Date == today, cancellationToken))
-            {
-                var populationHistory = await context.PlayerPopulationHistory
-                    .Where(x => x.Date == yesterday)
-                    .Select(x => new
-                    {
-                        x.PlayerId,
-                        x.Population
+                        PlayerId = x.Id,
+                        Date = today,
+                        AllianceId = x.AllianceId,
+                        Population = x.Population,
                     })
-                    .OrderBy(x => x.PlayerId)
-                    .ToListAsync(cancellationToken);
-
-                var populations = players
-                    .Select(x => x.GetPlayerPopulation(DateTime.Today))
                     .ToList();
 
-                foreach (var population in populations)
+                foreach (var player in oldPlayers)
                 {
-                    var history = populationHistory.Find(x => x.PlayerId == population.PlayerId);
-                    if (history is null) { continue; }
-                    population.Change = population.Population - history.Population;
+                    var exist = players.TryGetValue(player.Id, out var todayPlayer);
+                    if (!exist) { continue; }
+                    player.ChangeAlliance = todayPlayer?.AllianceId == player.AllianceId;
+                    player.ChangePopulation = todayPlayer?.Population == player.Population;
                 }
 
-                await context.BulkInsertAsync(populations, cancellationToken);
+                await context.BulkInsertOptimizedAsync(oldPlayers, cancellationToken);
             }
+
+            await context.BulkSynchronizeAsync(players.Values, options => options.SynchronizeKeepidentity = true, cancellationToken);
         }
     }
 }
