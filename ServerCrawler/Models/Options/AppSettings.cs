@@ -3,5 +3,6 @@
     public sealed class AppSettings
     {
         public string CalendarUrl { get; set; } = "";
+        public string WebhookUrl { get; set; } = "";
     }
 }

@@ -20,7 +20,11 @@ namespace ServerCrawler
 
         public async Task StartAsync(CancellationToken cancellationToken)
         {
-            await _mediator.Send(new DownloadCalendarCommand(), cancellationToken);
+            //var servers = await _mediator.Send(new DownloadCalendarCommand(), cancellationToken);
+            //await _mediator.Send(new UpdateCalendarsCommand(servers), cancellationToken);
+
+            await _mediator.Send(new SendMessageDiscordCommand(), cancellationToken);
+
             //_hostApplicationLifetime.StopApplication();
         }
 

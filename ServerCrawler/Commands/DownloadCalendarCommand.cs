@@ -1,6 +1,5 @@
 ﻿using HtmlAgilityPack;
 using MediatR;
-using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using ServerCrawler.Models;
 using ServerCrawler.Models.Options;
@@ -8,16 +7,15 @@ using System.Text.RegularExpressions;
 
 namespace ServerCrawler.Commands
 {
-    public record DownloadCalendarCommand : IRequest;
+    public record DownloadCalendarCommand : IRequest<IList<RawServer>>;
 
-    public partial class DownloadCalendarCommandHandler(IHttpClientFactory httpClientFactory, IOptions<AppSettings> appSettings, ILogger<DownloadCalendarCommand> logger)
-        : IRequestHandler<DownloadCalendarCommand>
+    public partial class DownloadCalendarCommandHandler(IHttpClientFactory httpClientFactory, IOptions<AppSettings> appSettings)
+        : IRequestHandler<DownloadCalendarCommand, IList<RawServer>>
     {
         private readonly IHttpClientFactory _httpClientFactory = httpClientFactory;
         private readonly AppSettings _appSettings = appSettings.Value;
-        private readonly ILogger<DownloadCalendarCommand> _logger = logger;
 
-        public async Task Handle(DownloadCalendarCommand request, CancellationToken cancellationToken)
+        public async Task<IList<RawServer>> Handle(DownloadCalendarCommand request, CancellationToken cancellationToken)
         {
             using var httpClient = _httpClientFactory.CreateClient();
             using var responseStream = await httpClient.GetStreamAsync(_appSettings.CalendarUrl, cancellationToken);
@@ -29,38 +27,28 @@ namespace ServerCrawler.Commands
             var calendars = html.DocumentNode
                 .Descendants("a")
                 .Where(x => x.HasClass("tribe-events-calendar-list__event-title-link"))
-                .Select(x => TabNewLineFinder().Replace(x.InnerText, ""))
-                .Select(x => GetServer(x));
-
-            _logger.LogInformation("{Calendars}", calendars);
+                .Select(x => x.InnerText)
+                .Select(x => TabNewLineFinder().Replace(x, ""))
+                .Select(GetServer);
+            return calendars.ToList();
         }
 
         [GeneratedRegex(@"\t|\n|\r")]
         private static partial Regex TabNewLineFinder();
 
-        private RawServer? GetServer(string serverInfo)
+        private RawServer GetServer(string serverInfo)
         {
             var parts = serverInfo.Split('~', StringSplitOptions.RemoveEmptyEntries);
-            if (parts.Length != 3)
+            var date = DateTime.Parse(parts[^1].Trim(), new TravianDateFormat());
+
+            if (parts.Length == 3)
             {
-                _logger.LogWarning("Invalid server info: {ServerInfo}", serverInfo);
-                return null;
+                return new RawServer(parts[0].Trim() + " " + parts[1].Trim(), date);
             }
-
-            var date = DateTime.Parse(parts[2].Trim(), new TravianDateFormat());
-            var splits = parts[1].Split(" ", StringSplitOptions.RemoveEmptyEntries);
-
-            var region = splits[0].Trim();
-            var code = "";
-            if (splits.Length == 2)
+            else
             {
-                code = splits[1].Trim();
+                return new RawServer(parts[0].Trim(), date);
             }
-
-            splits = parts[0].Split(" ", StringSplitOptions.RemoveEmptyEntries);
-            var speed = splits.Length == 2 ? splits[1].Trim() : "TBA";
-
-            return new RawServer(region, speed, code, date);
         }
     }
 
