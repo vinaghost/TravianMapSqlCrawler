@@ -10,7 +10,7 @@ namespace VillageCrawler.Commands
 
     public class ValidateServerCommandHandler(IHttpClientFactory httpClientFactory,
                                             IOptions<ConnectionStrings> connectionStrings,
-                                            IOptions<AppSettings> appSettings,                                            )
+                                            IOptions<AppSettings> appSettings)
         : IRequestHandler<ValidateServerCommand, IList<string>>
     {
         private readonly IHttpClientFactory _httpClientFactory = httpClientFactory;
