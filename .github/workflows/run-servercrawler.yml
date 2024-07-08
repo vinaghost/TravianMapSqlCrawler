@@ -4,7 +4,8 @@
 # SETTINGS_FILE
 name: Run Docker build of Server Crawler
 on:
-  workflow_dispatch:schedule:
+  workflow_dispatch:
+  schedule:
     - cron:  12 00 * * *
 jobs:
   run:
