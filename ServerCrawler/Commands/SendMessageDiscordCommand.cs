@@ -37,7 +37,7 @@ namespace ServerCrawler.Commands
             }
 
             var sb = new StringBuilder();
-            sb.AppendLine("@everyone");
+            sb.AppendLine($"@everyone {_appSettings.TravianLobbyUrl}");
 
             if (todayServers.Count > 0)
             {

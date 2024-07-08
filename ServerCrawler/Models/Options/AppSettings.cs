@@ -4,5 +4,6 @@
     {
         public string CalendarUrl { get; set; } = "";
         public string WebhookUrl { get; set; } = "";
+        public string TravianLobbyUrl { get; set; } = "";
     }
 }
