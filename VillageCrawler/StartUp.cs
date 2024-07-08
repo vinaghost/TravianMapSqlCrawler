@@ -3,36 +3,30 @@ using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 using System.Collections.Concurrent;
 using System.Diagnostics;
 using VillageCrawler.Commands;
 using VillageCrawler.Entities;
 using VillageCrawler.Extensions;
-using VillageCrawler.Models.Options;
 
 namespace VillageCrawler
 {
     public sealed class StartUp(IHostApplicationLifetime hostApplicationLifetime,
                                 IMediator mediator,
-                                ILogger<StartUp> logger,
-                                IOptions<AppSettings> appsettings)
+                                ILogger<StartUp> logger)
         : IHostedService
     {
         private readonly IHostApplicationLifetime _hostApplicationLifetime = hostApplicationLifetime;
         private readonly IMediator _mediator = mediator;
         private readonly ILogger<StartUp> _logger = logger;
-        private readonly AppSettings _appSettings = appsettings.Value;
 
         public async Task StartAsync(CancellationToken cancellationToken)
         {
+            var validServers = await _mediator.Send(new ValidateServerCommand(), cancellationToken);
             var servers = new ConcurrentQueue<Server>();
 
-            await Parallel.ForEachAsync(_appSettings.Servers, async (serverUrl, token) =>
+            await Parallel.ForEachAsync(validServers, async (serverUrl, token) =>
             {
-                var isValid = await _mediator.Send(new ValidateServerCommand(serverUrl), token);
-                if (!isValid) return;
-
                 var sw = new Stopwatch();
                 sw.Start();
                 var server = await UpdateVillageDatabase(serverUrl, cancellationToken);
