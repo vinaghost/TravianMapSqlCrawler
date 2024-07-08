@@ -39,7 +39,7 @@ namespace ServerCrawler.Commands
         private RawServer GetServer(string serverInfo)
         {
             var parts = serverInfo.Split('~', StringSplitOptions.RemoveEmptyEntries);
-            var date = DateTime.Parse(parts[^1].Trim(), new TravianDateFormat());
+            var date = DateTime.ParseExact(parts[^1].Trim(), "dd.MM.yyyy", new TravianDateFormat());
 
             if (parts.Length == 3)
             {
