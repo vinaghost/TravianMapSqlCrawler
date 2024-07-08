@@ -15,7 +15,6 @@ namespace VillageCrawler.Commands
         public async Task Handle(UpdateServerListCommand request, CancellationToken cancellationToken)
         {
             using var context = new ServerDbContext(_connections.Server);
-            await context.Database.EnsureCreatedAsync(cancellationToken);
             await context.BulkUpdateAsync(request.Servers);
         }
     }

@@ -20,6 +20,7 @@ namespace VillageCrawler.Commands
         public async Task<IList<string>> Handle(ValidateServerCommand request, CancellationToken cancellationToken)
         {
             using var context = new ServerDbContext(_connectionStrings.Server);
+            await context.Database.EnsureCreatedAsync(cancellationToken);
 
             var servers = context.Servers
                 .Select(x => x.Url)

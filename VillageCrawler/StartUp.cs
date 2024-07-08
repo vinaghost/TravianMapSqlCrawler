@@ -1,10 +1,7 @@
-﻿using ConsoleTables;
-using MediatR;
+﻿using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using System.Collections.Concurrent;
-using System.Diagnostics;
 using VillageCrawler.Commands;
 using VillageCrawler.Entities;
 using VillageCrawler.Extensions;
@@ -23,28 +20,28 @@ namespace VillageCrawler
         public async Task StartAsync(CancellationToken cancellationToken)
         {
             var validServers = await _mediator.Send(new ValidateServerCommand(), cancellationToken);
-            var servers = new ConcurrentQueue<Server>();
+            //var servers = new ConcurrentQueue<Server>();
 
-            await Parallel.ForEachAsync(validServers, async (serverUrl, token) =>
-            {
-                var sw = new Stopwatch();
-                sw.Start();
-                var server = await UpdateVillageDatabase(serverUrl, cancellationToken);
-                sw.Stop();
-                if (server is null) return;
-                servers.Enqueue(server);
-                _logger.LogInformation("Updated {Url} in {Time}s", serverUrl, sw.ElapsedMilliseconds / 1000);
-            });
+            //await Parallel.ForEachAsync(validServers, async (serverUrl, token) =>
+            //{
+            //    var sw = new Stopwatch();
+            //    sw.Start();
+            //    var server = await UpdateVillageDatabase(serverUrl, cancellationToken);
+            //    sw.Stop();
+            //    if (server is null) return;
+            //    servers.Enqueue(server);
+            //    _logger.LogInformation("Updated {Url} in {Time}s", serverUrl, sw.ElapsedMilliseconds / 1000);
+            //});
 
-            await _mediator.Send(new UpdateServerListCommand([.. servers]), cancellationToken);
+            //await _mediator.Send(new UpdateServerListCommand([.. servers]), cancellationToken);
 
-            var data = servers.OrderByDescending(x => x.PlayerCount).ToList();
-            ConsoleTable
-                .From(data)
-                .Configure(o => o.NumberAlignment = Alignment.Right)
-                .Write(Format.Alternative);
+            //var data = servers.OrderByDescending(x => x.PlayerCount).ToList();
+            //ConsoleTable
+            //    .From(data)
+            //    .Configure(o => o.NumberAlignment = Alignment.Right)
+            //    .Write(Format.Alternative);
 
-            _hostApplicationLifetime.StopApplication();
+            //_hostApplicationLifetime.StopApplication();
         }
 
         public Task StopAsync(CancellationToken cancellationToken)
