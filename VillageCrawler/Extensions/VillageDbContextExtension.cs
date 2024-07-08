@@ -42,10 +42,11 @@ namespace VillageCrawler.Extensions
                 {
                     var exist = alliances.TryGetValue(alliance.Id, out var todayAlliance);
                     if (!exist) { continue; }
-                    alliance.ChangePlayerCount = todayAlliance?.PlayerCount == alliance.PlayerCount;
+                    if (todayAlliance is null) { continue; }
+                    alliance.ChangePlayerCount = todayAlliance.PlayerCount == alliance.PlayerCount;
                 }
 
-                await context.BulkInsertOptimizedAsync(oldAlliances, cancellationToken);
+                await context.BulkInsertAsync(oldAlliances, cancellationToken);
             }
 
             await context.BulkMergeAsync(alliances.Values);
@@ -90,11 +91,12 @@ namespace VillageCrawler.Extensions
                 {
                     var exist = players.TryGetValue(player.Id, out var todayPlayer);
                     if (!exist) { continue; }
-                    player.ChangeAlliance = todayPlayer?.AllianceId == player.AllianceId;
-                    player.ChangePopulation = todayPlayer?.Population == player.Population;
+                    if (todayPlayer is null) { continue; }
+                    player.ChangeAlliance = todayPlayer.AllianceId == player.AllianceId;
+                    player.ChangePopulation = todayPlayer.Population == player.Population;
                 }
 
-                await context.BulkInsertOptimizedAsync(oldPlayers, cancellationToken);
+                await context.BulkInsertAsync(oldPlayers, cancellationToken);
             }
 
             await context.BulkSynchronizeAsync(players.Values, options => options.SynchronizeKeepidentity = true, cancellationToken);
@@ -129,10 +131,11 @@ namespace VillageCrawler.Extensions
                 {
                     var exist = villages.TryGetValue(player.Id, out var todayVillage);
                     if (!exist) { continue; }
-                    player.ChangePopulation = todayVillage?.Population == player.Population;
+                    if (todayVillage is null) { continue; }
+                    player.ChangePopulation = todayVillage.Population == player.Population;
                 }
 
-                await context.BulkInsertOptimizedAsync(oldVillages, cancellationToken);
+                await context.BulkInsertAsync(oldVillages, cancellationToken);
             }
 
             await context.BulkSynchronizeAsync(villages.Values, options => options.SynchronizeKeepidentity = true, cancellationToken);
