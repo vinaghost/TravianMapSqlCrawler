@@ -7,9 +7,7 @@ using ServerCrawler.Extensions;
 var builder = Host.CreateApplicationBuilder(args);
 builder.BindConfiguration();
 builder.Services.AddSerilog((services, loggerConfiguration) => loggerConfiguration
-    .ReadFrom.Configuration(builder.Configuration)
-    .Enrich.FromLogContext()
-    .WriteTo.Console());
+    .ReadFrom.Configuration(builder.Configuration));
 builder.Services.AddMediatR(cfg =>
 {
     cfg.RegisterServicesFromAssembly(typeof(Program).Assembly);
