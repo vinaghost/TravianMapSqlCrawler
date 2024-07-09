@@ -9,18 +9,10 @@ namespace VillageCrawler.Extensions
     {
         public static async Task UpdateAlliance(this VillageDbContext context, IList<RawVillage> rawVillages, CancellationToken cancellationToken)
         {
-            var alliances = rawVillages
-                .DistinctBy(x => x.PlayerId)
-                .GroupBy(x => x.AllianceId)
-                .Select(x => new Alliance
-                {
-                    Id = x.Key,
-                    Name = x.First().AllianceName,
-                    PlayerCount = x.Count(),
-                })
-                .ToDictionary(x => x.Id, x => x);
+            var alliances = rawVillages.GetAlliances();
 
             var today = DateTime.Today;
+            var yesterday = today.AddDays(-1);
             if (!await context.AlliancesHistory.AnyAsync(x => x.Date == EF.Constant(today), cancellationToken))
             {
                 var oldAlliances = context.Alliances
@@ -40,7 +32,7 @@ namespace VillageCrawler.Extensions
 
                 foreach (var alliance in oldAlliances)
                 {
-                    var exist = alliances.TryGetValue(alliance.Id, out var todayAlliance);
+                    var exist = alliances.TryGetValue(alliance.AllianceId, out var todayAlliance);
                     if (!exist) { continue; }
                     if (todayAlliance is null) { continue; }
                     alliance.ChangePlayerCount = todayAlliance.PlayerCount == alliance.PlayerCount;
@@ -54,17 +46,7 @@ namespace VillageCrawler.Extensions
 
         public static async Task UpdatePlayer(this VillageDbContext context, IList<RawVillage> rawVillages, CancellationToken cancellationToken)
         {
-            var players = rawVillages
-               .GroupBy(x => x.PlayerId)
-               .Select(x => new Player
-               {
-                   Id = x.Key,
-                   Name = x.First().PlayerName,
-                   AllianceId = x.First().AllianceId,
-                   Population = x.Sum(x => x.Population),
-                   VillageCount = x.Count(),
-               })
-               .ToDictionary(x => x.Id, x => x);
+            var players = rawVillages.GetPlayers();
 
             var today = DateTime.Today;
 
@@ -89,7 +71,7 @@ namespace VillageCrawler.Extensions
 
                 foreach (var player in oldPlayers)
                 {
-                    var exist = players.TryGetValue(player.Id, out var todayPlayer);
+                    var exist = players.TryGetValue(player.PlayerId, out var todayPlayer);
                     if (!exist) { continue; }
                     if (todayPlayer is null) { continue; }
                     player.ChangeAlliance = todayPlayer.AllianceId == player.AllianceId;
@@ -104,9 +86,7 @@ namespace VillageCrawler.Extensions
 
         public static async Task UpdateVillage(this VillageDbContext context, IList<RawVillage> rawVillages, CancellationToken cancellationToken)
         {
-            var villages = rawVillages
-                .Select(x => x.GetVillage())
-                .ToDictionary(x => x.Id, x => x);
+            var villages = rawVillages.GetVillages();
 
             var today = DateTime.Today;
 
@@ -129,7 +109,7 @@ namespace VillageCrawler.Extensions
 
                 foreach (var player in oldVillages)
                 {
-                    var exist = villages.TryGetValue(player.Id, out var todayVillage);
+                    var exist = villages.TryGetValue(player.VillageId, out var todayVillage);
                     if (!exist) { continue; }
                     if (todayVillage is null) { continue; }
                     player.ChangePopulation = todayVillage.Population == player.Population;
