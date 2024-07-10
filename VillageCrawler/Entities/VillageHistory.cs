@@ -14,6 +14,6 @@ namespace VillageCrawler.Entities
 
         public int Population { get; set; }
 
-        public bool ChangePopulation { get; set; }
+        public int ChangePopulation { get; set; }
     }
 }

@@ -74,7 +74,7 @@ namespace VillageCrawler.Extensions
                     if (!exist) { continue; }
                     if (todayPlayer is null) { continue; }
                     player.ChangeAlliance = todayPlayer.AllianceId == player.AllianceId;
-                    player.ChangePopulation = todayPlayer.Population == player.Population;
+                    player.ChangePopulation = todayPlayer.Population - player.Population;
                 }
 
                 await context.BulkInsertAsync(oldPlayers, cancellationToken);
@@ -111,7 +111,7 @@ namespace VillageCrawler.Extensions
                     var exist = villages.TryGetValue(player.VillageId, out var todayVillage);
                     if (!exist) { continue; }
                     if (todayVillage is null) { continue; }
-                    player.ChangePopulation = todayVillage.Population == player.Population;
+                    player.ChangePopulation = todayVillage.Population - player.Population;
                 }
 
                 await context.BulkInsertAsync(oldVillages, cancellationToken);
