@@ -2,37 +2,37 @@
 using Microsoft.Extensions.Options;
 using System.Collections.Concurrent;
 using VillageCrawler.DbContexts;
+using VillageCrawler.Entities;
 using VillageCrawler.Models.Options;
 
 namespace VillageCrawler.Commands
 {
-    public record ValidateServerCommand : IRequest<IList<string>>;
+    public record ValidateServerCommand : IRequest<IList<Server>>;
 
     public class ValidateServerCommandHandler(IHttpClientFactory httpClientFactory,
                                             IOptions<ConnectionStrings> connectionStrings,
                                             IOptions<AppSettings> appSettings)
-        : IRequestHandler<ValidateServerCommand, IList<string>>
+        : IRequestHandler<ValidateServerCommand, IList<Server>>
     {
         private readonly IHttpClientFactory _httpClientFactory = httpClientFactory;
         private readonly ConnectionStrings _connectionStrings = connectionStrings.Value;
         private readonly AppSettings _appSettings = appSettings.Value;
 
-        public async Task<IList<string>> Handle(ValidateServerCommand request, CancellationToken cancellationToken)
+        public async Task<IList<Server>> Handle(ValidateServerCommand request, CancellationToken cancellationToken)
         {
             using var context = new ServerDbContext(_connectionStrings.Server);
             await context.Database.EnsureCreatedAsync(cancellationToken);
 
             var servers = context.Servers
-                .Select(x => x.Url)
                 .ToList();
 
-            var validServers = new ConcurrentQueue<string>();
+            var validServers = new ConcurrentQueue<Server>();
 
-            await Parallel.ForEachAsync(servers, async (serverUrl, token) =>
+            await Parallel.ForEachAsync(servers, async (server, token) =>
             {
-                var isValid = await ValidateServer(serverUrl, token);
+                var isValid = await ValidateServer(server.Url, token);
                 if (!isValid) return;
-                validServers.Enqueue(serverUrl);
+                validServers.Enqueue(server);
             });
 
             return [.. validServers];

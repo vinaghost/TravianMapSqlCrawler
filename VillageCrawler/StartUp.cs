@@ -25,15 +25,15 @@ namespace VillageCrawler
             var validServers = await _mediator.Send(new ValidateServerCommand(), cancellationToken);
             var servers = new ConcurrentQueue<Server>();
 
-            await Parallel.ForEachAsync(validServers, async (serverUrl, token) =>
+            await Parallel.ForEachAsync(validServers, async (validServer, token) =>
             {
                 var sw = new Stopwatch();
                 sw.Start();
-                var server = await UpdateVillageDatabase(serverUrl, cancellationToken);
+                var server = await UpdateVillageDatabase(validServer, cancellationToken);
                 sw.Stop();
                 if (server is null) return;
                 servers.Enqueue(server);
-                _logger.LogInformation("Updated {Url} in {Time}s", serverUrl, sw.ElapsedMilliseconds / 1000);
+                _logger.LogInformation("Updated {Url} in {Time}s", validServer.Url, sw.ElapsedMilliseconds / 1000);
             });
 
             await _mediator.Send(new UpdateServerListCommand([.. servers]), cancellationToken);
@@ -52,12 +52,12 @@ namespace VillageCrawler
             return Task.CompletedTask;
         }
 
-        private async Task<Server?> UpdateVillageDatabase(string url, CancellationToken cancellationToken)
+        private async Task<Server?> UpdateVillageDatabase(Server server, CancellationToken cancellationToken)
         {
-            var villages = await _mediator.Send(new DownloadMapSqlCommand(url), cancellationToken);
+            var villages = await _mediator.Send(new DownloadMapSqlCommand(server.Url), cancellationToken);
             if (villages.Count == 0) return null;
 
-            using var context = await _mediator.Send(new CreateVillageDatabaseCommand(url), cancellationToken);
+            using var context = await _mediator.Send(new CreateVillageDatabaseCommand(server.Url), cancellationToken);
 
             var transaction = await context.Database.BeginTransactionAsync(cancellationToken);
             try
@@ -77,15 +77,10 @@ namespace VillageCrawler
             var playerCount = await context.Players.CountAsync(cancellationToken: cancellationToken);
             var villageCount = await context.Villages.CountAsync(cancellationToken: cancellationToken);
 
-            var server = new Server
-            {
-                Url = url,
-                LastUpdate = DateTime.Now,
-                AllianceCount = allianceCount,
-                PlayerCount = playerCount,
-                VillageCount = villageCount,
-            };
-
+            server.AllianceCount = allianceCount;
+            server.PlayerCount = playerCount;
+            server.VillageCount = villageCount;
+            server.LastUpdate = DateTime.Now;
             return server;
         }
     }
