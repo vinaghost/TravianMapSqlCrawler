@@ -12,7 +12,6 @@ namespace VillageCrawler.Extensions
             var alliances = rawVillages.GetAlliances();
 
             var today = DateTime.Today;
-            var yesterday = today.AddDays(-1);
             if (!await context.AlliancesHistory.AnyAsync(x => x.Date == EF.Constant(today), cancellationToken))
             {
                 var oldAlliances = context.Alliances
