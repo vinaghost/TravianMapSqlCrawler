@@ -25,7 +25,7 @@ namespace VillageCrawler.Extensions
             };
         }
 
-        public static Dictionary<int, Alliance> GetAlliances(this IList<RawVillage> rawVillages)
+        public static List<Alliance> GetAlliances(this IList<RawVillage> rawVillages)
         {
             return rawVillages
                 .DistinctBy(x => x.PlayerId)
@@ -36,10 +36,10 @@ namespace VillageCrawler.Extensions
                     Name = x.First().AllianceName,
                     PlayerCount = x.Count(),
                 })
-                .ToDictionary(x => x.Id, x => x);
+                .ToList();
         }
 
-        public static Dictionary<int, Player> GetPlayers(this IList<RawVillage> rawVillages)
+        public static List<Player> GetPlayers(this IList<RawVillage> rawVillages)
         {
             return rawVillages
                .GroupBy(x => x.PlayerId)
@@ -51,14 +51,14 @@ namespace VillageCrawler.Extensions
                    Population = x.Sum(x => x.Population),
                    VillageCount = x.Count(),
                })
-               .ToDictionary(x => x.Id, x => x);
+               .ToList();
         }
 
-        public static Dictionary<int, Village> GetVillages(this IList<RawVillage> rawVillages)
+        public static List<Village> GetVillages(this IList<RawVillage> rawVillages)
         {
             return rawVillages
                 .Select(x => x.GetVillage())
-                .ToDictionary(x => x.Id, x => x);
+                .ToList();
         }
     }
 }

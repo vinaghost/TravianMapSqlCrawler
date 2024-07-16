@@ -8,6 +8,7 @@ namespace VillageCrawler.Extensions
     public static class VillageDbContextExtension
     {
         private static readonly DateTime Today = DateTime.Today;
+        private static readonly DateTime Yesterday = Today.AddDays(-1);
 
         public static async Task UpdateAlliance(this VillageDbContext context, IList<RawVillage> rawVillages, CancellationToken cancellationToken)
         {
@@ -15,33 +16,39 @@ namespace VillageCrawler.Extensions
 
             if (!await context.AlliancesHistory.AnyAsync(x => x.Date == EF.Constant(Today), cancellationToken))
             {
-                var oldAlliances = await context.Alliances
+                var oldAlliances = await context.AlliancesHistory
+                    .Where(x => x.Date == EF.Constant(Yesterday))
                     .Select(x => new AllianceHistory
                     {
                         AllianceId = x.Id,
                         PlayerCount = x.PlayerCount,
                     })
-                    .ToListAsync(cancellationToken);
+                    .ToDictionaryAsync(x => x.AllianceId, x => x, cancellationToken);
 
                 var validAlliances = AllianceHistoryHandle(alliances, oldAlliances);
                 await context.BulkInsertAsync(validAlliances, cancellationToken);
             }
 
-            await context.BulkMergeAsync(alliances.Values);
+            await context.BulkMergeAsync(alliances);
         }
 
-        private static IEnumerable<AllianceHistory> AllianceHistoryHandle(Dictionary<int, Alliance> todayAlliances, IList<AllianceHistory> oldAlliances)
+        private static IEnumerable<AllianceHistory> AllianceHistoryHandle(IList<Alliance> todayAlliances, Dictionary<int, AllianceHistory> yesterdayAlliances)
         {
-            foreach (var oldAlliance in oldAlliances)
+            foreach (var todayAlliance in todayAlliances)
             {
-                oldAlliance.Date = Today;
-
-                var exist = todayAlliances.TryGetValue(oldAlliance.AllianceId, out var todayAlliance);
-                if (exist && todayAlliance is not null)
+                var history = new AllianceHistory()
                 {
-                    oldAlliance.ChangePlayerCount = todayAlliance.PlayerCount - oldAlliance.PlayerCount;
+                    AllianceId = todayAlliance.Id,
+                    Date = Today,
+                    PlayerCount = todayAlliance.PlayerCount,
+                };
+
+                var exist = yesterdayAlliances.TryGetValue(todayAlliance.Id, out var yesterdayAlliance);
+                if (exist && yesterdayAlliance is not null)
+                {
+                    history.ChangePlayerCount = todayAlliance.PlayerCount - yesterdayAlliance.PlayerCount;
                 }
-                yield return oldAlliance;
+                yield return history;
             }
         }
 
@@ -51,36 +58,43 @@ namespace VillageCrawler.Extensions
 
             if (!await context.PlayersHistory.AnyAsync(x => x.Date == EF.Constant(Today), cancellationToken))
             {
-                var oldPlayers = await context.Players
+                var oldPlayers = await context.PlayersHistory
+                    .Where(x => x.Date == EF.Constant(Yesterday))
                     .Select(x => new PlayerHistory
                     {
                         PlayerId = x.Id,
                         AllianceId = x.AllianceId,
                         Population = x.Population,
                     })
-                    .ToListAsync(cancellationToken);
+                    .ToDictionaryAsync(x => x.PlayerId, x => x, cancellationToken);
 
                 var validPlayers = PlayerHistoryHandle(players, oldPlayers);
 
                 await context.BulkInsertAsync(validPlayers, cancellationToken);
             }
 
-            await context.BulkSynchronizeAsync(players.Values, cancellationToken);
+            await context.BulkSynchronizeAsync(players, cancellationToken);
         }
 
-        private static IEnumerable<PlayerHistory> PlayerHistoryHandle(Dictionary<int, Player> todayPlayers, IList<PlayerHistory> oldPlayers)
+        private static IEnumerable<PlayerHistory> PlayerHistoryHandle(IList<Player> todayPlayers, Dictionary<int, PlayerHistory> yesterdayPlayers)
         {
-            foreach (var oldPlayer in oldPlayers)
+            foreach (var todayPlayer in todayPlayers)
             {
-                oldPlayer.Date = Today;
-
-                var exist = todayPlayers.TryGetValue(oldPlayer.PlayerId, out var todayPlayer);
-                if (exist && todayPlayer is not null)
+                var history = new PlayerHistory()
                 {
-                    oldPlayer.ChangeAlliance = todayPlayer.AllianceId != oldPlayer.AllianceId;
-                    oldPlayer.ChangePopulation = todayPlayer.Population - oldPlayer.Population;
+                    PlayerId = todayPlayer.Id,
+                    Date = Today,
+                    AllianceId = todayPlayer.AllianceId,
+                    Population = todayPlayer.Population,
+                };
+
+                var exist = yesterdayPlayers.TryGetValue(todayPlayer.Id, out var yesterdayPlayer);
+                if (exist && yesterdayPlayer is not null)
+                {
+                    history.ChangeAlliance = todayPlayer.AllianceId != yesterdayPlayer.AllianceId;
+                    history.ChangePopulation = todayPlayer.Population - yesterdayPlayer.Population;
                 }
-                yield return oldPlayer;
+                yield return history;
             }
         }
 
@@ -90,33 +104,39 @@ namespace VillageCrawler.Extensions
 
             if (!await context.VillagesHistory.AnyAsync(x => x.Date == EF.Constant(Today), cancellationToken))
             {
-                var oldVillages = await context.Villages
+                var oldVillages = await context.VillagesHistory
+                    .Where(x => x.Date == EF.Constant(Yesterday))
                     .Select(x => new VillageHistory
                     {
                         VillageId = x.Id,
                         Population = x.Population,
                     })
-                    .ToListAsync(cancellationToken);
+                    .ToDictionaryAsync(x => x.VillageId, x => x, cancellationToken);
 
                 var validVillages = VillageHistoryHandle(villages, oldVillages);
                 await context.BulkInsertAsync(validVillages, cancellationToken);
             }
 
-            await context.BulkSynchronizeAsync(villages.Values, cancellationToken);
+            await context.BulkSynchronizeAsync(villages, cancellationToken);
         }
 
-        private static IEnumerable<VillageHistory> VillageHistoryHandle(Dictionary<int, Village> todayVillages, IList<VillageHistory> oldVillages)
+        private static IEnumerable<VillageHistory> VillageHistoryHandle(IList<Village> todayVillages, Dictionary<int, VillageHistory> yesterdayVillages)
         {
-            foreach (var oldVillage in oldVillages)
+            foreach (var todayVillage in todayVillages)
             {
-                oldVillage.Date = Today;
-
-                var exist = todayVillages.TryGetValue(oldVillage.VillageId, out var todayVillage);
-                if (exist && todayVillage is not null)
+                var history = new VillageHistory()
                 {
-                    oldVillage.ChangePopulation = todayVillage.Population - oldVillage.Population;
+                    VillageId = todayVillage.Id,
+                    Date = Today,
+                    Population = todayVillage.Population,
+                };
+
+                var exist = yesterdayVillages.TryGetValue(todayVillage.Id, out var yesterdayVillage);
+                if (exist && yesterdayVillage is not null)
+                {
+                    history.ChangePopulation = todayVillage.Population - yesterdayVillage.Population;
                 }
-                yield return oldVillage;
+                yield return history;
             }
         }
     }
