@@ -14,6 +14,8 @@ namespace VillageCrawler.Extensions
         {
             var alliances = rawVillages.GetAlliances();
 
+            await context.BulkMergeAsync(alliances);
+
             if (!await context.AlliancesHistory.AnyAsync(x => x.Date == EF.Constant(Today), cancellationToken))
             {
                 var oldAlliances = await context.AlliancesHistory
@@ -28,8 +30,6 @@ namespace VillageCrawler.Extensions
                 var validAlliances = AllianceHistoryHandle(alliances, oldAlliances);
                 await context.BulkInsertAsync(validAlliances, cancellationToken);
             }
-
-            await context.BulkMergeAsync(alliances);
         }
 
         private static IEnumerable<AllianceHistory> AllianceHistoryHandle(IList<Alliance> todayAlliances, Dictionary<int, AllianceHistory> yesterdayAlliances)
@@ -56,6 +56,8 @@ namespace VillageCrawler.Extensions
         {
             var players = rawVillages.GetPlayers();
 
+            await context.BulkSynchronizeAsync(players, cancellationToken);
+
             if (!await context.PlayersHistory.AnyAsync(x => x.Date == EF.Constant(Today), cancellationToken))
             {
                 var oldPlayers = await context.PlayersHistory
@@ -72,8 +74,6 @@ namespace VillageCrawler.Extensions
 
                 await context.BulkInsertAsync(validPlayers, cancellationToken);
             }
-
-            await context.BulkSynchronizeAsync(players, cancellationToken);
         }
 
         private static IEnumerable<PlayerHistory> PlayerHistoryHandle(IList<Player> todayPlayers, Dictionary<int, PlayerHistory> yesterdayPlayers)
@@ -102,6 +102,8 @@ namespace VillageCrawler.Extensions
         {
             var villages = rawVillages.GetVillages();
 
+            await context.BulkSynchronizeAsync(villages, cancellationToken);
+
             if (!await context.VillagesHistory.AnyAsync(x => x.Date == EF.Constant(Today), cancellationToken))
             {
                 var oldVillages = await context.VillagesHistory
@@ -116,8 +118,6 @@ namespace VillageCrawler.Extensions
                 var validVillages = VillageHistoryHandle(villages, oldVillages);
                 await context.BulkInsertAsync(validVillages, cancellationToken);
             }
-
-            await context.BulkSynchronizeAsync(villages, cancellationToken);
         }
 
         private static IEnumerable<VillageHistory> VillageHistoryHandle(IList<Village> todayVillages, Dictionary<int, VillageHistory> yesterdayVillages)
