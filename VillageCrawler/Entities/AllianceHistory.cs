@@ -13,6 +13,6 @@ namespace VillageCrawler.Entities
         public DateTime Date { get; set; }
 
         public int PlayerCount { get; set; }
-        public bool ChangePlayerCount { get; set; }
+        public int ChangePlayerCount { get; set; }
     }
 }

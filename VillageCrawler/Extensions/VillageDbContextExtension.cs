@@ -34,7 +34,7 @@ namespace VillageCrawler.Extensions
                     var exist = alliances.TryGetValue(alliance.AllianceId, out var todayAlliance);
                     if (!exist) { continue; }
                     if (todayAlliance is null) { continue; }
-                    alliance.ChangePlayerCount = todayAlliance.PlayerCount == alliance.PlayerCount;
+                    alliance.ChangePlayerCount = todayAlliance.PlayerCount - alliance.PlayerCount;
                 }
 
                 await context.BulkInsertAsync(oldAlliances, cancellationToken);
