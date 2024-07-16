@@ -80,7 +80,7 @@ namespace VillageCrawler.Extensions
                 await context.BulkInsertAsync(oldPlayers, cancellationToken);
             }
 
-            await context.BulkSynchronizeAsync(players.Values, options => options.SynchronizeKeepidentity = true, cancellationToken);
+            await context.BulkSynchronizeAsync(players.Values, cancellationToken);
         }
 
         public static async Task UpdateVillage(this VillageDbContext context, IList<RawVillage> rawVillages, CancellationToken cancellationToken)
@@ -117,7 +117,7 @@ namespace VillageCrawler.Extensions
                 await context.BulkInsertAsync(oldVillages, cancellationToken);
             }
 
-            await context.BulkSynchronizeAsync(villages.Values, options => options.SynchronizeKeepidentity = true, cancellationToken);
+            await context.BulkSynchronizeAsync(villages.Values, cancellationToken);
         }
     }
 }
