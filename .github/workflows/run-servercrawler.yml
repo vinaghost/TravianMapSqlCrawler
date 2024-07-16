@@ -2,6 +2,7 @@
 # DOCKERHUB_USERNAME
 # DOCKERHUB_TOKEN
 # SETTINGS_FILE
+# PAT
 name: Run Docker build of Server Crawler
 on:
   workflow_dispatch:
