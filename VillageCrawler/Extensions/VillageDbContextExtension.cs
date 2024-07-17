@@ -8,6 +8,7 @@ namespace VillageCrawler.Extensions
     public static class VillageDbContextExtension
     {
         private static readonly DateTime Today = DateTime.Today;
+        private static readonly DateTime Yesterday = Today.AddDays(-1);
 
         public static async Task UpdateAlliance(this VillageDbContext context, IList<RawVillage> rawVillages, CancellationToken cancellationToken)
         {
@@ -17,10 +18,11 @@ namespace VillageCrawler.Extensions
 
             if (!await context.AlliancesHistory.AnyAsync(x => x.Date == EF.Constant(Today), cancellationToken))
             {
-                var oldAlliances = await context.Alliances
+                var oldAlliances = await context.AlliancesHistory
+                    .Where(x => x.Date == EF.Constant(Yesterday))
                     .Select(x => new AllianceHistory
                     {
-                        AllianceId = x.Id,
+                        AllianceId = x.AllianceId,
                         PlayerCount = x.PlayerCount,
                     })
                     .ToDictionaryAsync(x => x.AllianceId, x => x, cancellationToken);
@@ -44,7 +46,7 @@ namespace VillageCrawler.Extensions
                 var exist = yesterdayAlliances.TryGetValue(todayAlliance.Id, out var yesterdayAlliance);
                 if (exist && yesterdayAlliance is not null)
                 {
-                    history.ChangePlayerCount = todayAlliance.PlayerCount - yesterdayAlliance.PlayerCount;
+                    history.ChangePlayerCount = yesterdayAlliance.PlayerCount - todayAlliance.PlayerCount;
                 }
                 yield return history;
             }
@@ -58,10 +60,11 @@ namespace VillageCrawler.Extensions
 
             if (!await context.PlayersHistory.AnyAsync(x => x.Date == EF.Constant(Today), cancellationToken))
             {
-                var oldPlayers = await context.Players
+                var oldPlayers = await context.PlayersHistory
+                    .Where(x => x.Date == EF.Constant(Yesterday))
                     .Select(x => new PlayerHistory
                     {
-                        PlayerId = x.Id,
+                        PlayerId = x.PlayerId,
                         AllianceId = x.AllianceId,
                         Population = x.Population,
                     })
@@ -88,8 +91,8 @@ namespace VillageCrawler.Extensions
                 var exist = yesterdayPlayers.TryGetValue(todayPlayer.Id, out var yesterdayPlayer);
                 if (exist && yesterdayPlayer is not null)
                 {
-                    history.ChangeAlliance = todayPlayer.AllianceId != yesterdayPlayer.AllianceId;
-                    history.ChangePopulation = todayPlayer.Population - yesterdayPlayer.Population;
+                    history.ChangeAlliance = yesterdayPlayer.AllianceId != todayPlayer.AllianceId;
+                    history.ChangePopulation = yesterdayPlayer.Population - todayPlayer.Population;
                 }
                 yield return history;
             }
@@ -103,10 +106,11 @@ namespace VillageCrawler.Extensions
 
             if (!await context.VillagesHistory.AnyAsync(x => x.Date == EF.Constant(Today), cancellationToken))
             {
-                var oldVillages = await context.Villages
+                var oldVillages = await context.VillagesHistory
+                    .Where(x => x.Date == EF.Constant(Yesterday))
                     .Select(x => new VillageHistory
                     {
-                        VillageId = x.Id,
+                        VillageId = x.VillageId,
                         Population = x.Population,
                     })
                     .ToDictionaryAsync(x => x.VillageId, x => x, cancellationToken);
@@ -130,7 +134,7 @@ namespace VillageCrawler.Extensions
                 var exist = yesterdayVillages.TryGetValue(todayVillage.Id, out var yesterdayVillage);
                 if (exist && yesterdayVillage is not null)
                 {
-                    history.ChangePopulation = todayVillage.Population - yesterdayVillage.Population;
+                    history.ChangePopulation = yesterdayVillage.Population - todayVillage.Population;
                 }
                 yield return history;
             }
