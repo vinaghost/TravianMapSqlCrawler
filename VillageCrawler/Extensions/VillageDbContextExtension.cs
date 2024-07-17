@@ -8,7 +8,6 @@ namespace VillageCrawler.Extensions
     public static class VillageDbContextExtension
     {
         private static readonly DateTime Today = DateTime.Today;
-        private static readonly DateTime Yesterday = Today.AddDays(-1);
 
         public static async Task UpdateAlliance(this VillageDbContext context, IList<RawVillage> rawVillages, CancellationToken cancellationToken)
         {
@@ -18,8 +17,7 @@ namespace VillageCrawler.Extensions
 
             if (!await context.AlliancesHistory.AnyAsync(x => x.Date == EF.Constant(Today), cancellationToken))
             {
-                var oldAlliances = await context.AlliancesHistory
-                    .Where(x => x.Date == EF.Constant(Yesterday))
+                var oldAlliances = await context.Alliances
                     .Select(x => new AllianceHistory
                     {
                         AllianceId = x.Id,
@@ -60,8 +58,7 @@ namespace VillageCrawler.Extensions
 
             if (!await context.PlayersHistory.AnyAsync(x => x.Date == EF.Constant(Today), cancellationToken))
             {
-                var oldPlayers = await context.PlayersHistory
-                    .Where(x => x.Date == EF.Constant(Yesterday))
+                var oldPlayers = await context.Players
                     .Select(x => new PlayerHistory
                     {
                         PlayerId = x.Id,
@@ -106,8 +103,7 @@ namespace VillageCrawler.Extensions
 
             if (!await context.VillagesHistory.AnyAsync(x => x.Date == EF.Constant(Today), cancellationToken))
             {
-                var oldVillages = await context.VillagesHistory
-                    .Where(x => x.Date == EF.Constant(Yesterday))
+                var oldVillages = await context.Villages
                     .Select(x => new VillageHistory
                     {
                         VillageId = x.Id,
