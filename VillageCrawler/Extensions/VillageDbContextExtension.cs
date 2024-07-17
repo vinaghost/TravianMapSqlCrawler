@@ -104,8 +104,8 @@ namespace VillageCrawler.Extensions
 
             if (!await context.VillagesHistory.AnyAsync(x => x.Date == EF.Constant(Today), cancellationToken))
             {
-                var oldVillages = await context.VillagesHistory
-                    .Select(x => new Village
+                var oldVillages = await context.Villages
+                    .Select(x => new VillageHistory
                     {
                         VillageId = x.Id,
                         Population = x.Population,
