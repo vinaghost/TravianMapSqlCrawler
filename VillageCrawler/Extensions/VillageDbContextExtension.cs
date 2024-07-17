@@ -46,7 +46,7 @@ namespace VillageCrawler.Extensions
                 var exist = yesterdayAlliances.TryGetValue(todayAlliance.Id, out var yesterdayAlliance);
                 if (exist && yesterdayAlliance is not null)
                 {
-                    history.ChangePlayerCount = yesterdayAlliance.PlayerCount - todayAlliance.PlayerCount;
+                    history.ChangePlayerCount = todayAlliance.PlayerCount - yesterdayAlliance.PlayerCount;
                 }
                 yield return history;
             }
@@ -91,8 +91,8 @@ namespace VillageCrawler.Extensions
                 var exist = yesterdayPlayers.TryGetValue(todayPlayer.Id, out var yesterdayPlayer);
                 if (exist && yesterdayPlayer is not null)
                 {
-                    history.ChangeAlliance = yesterdayPlayer.AllianceId != todayPlayer.AllianceId;
-                    history.ChangePopulation = yesterdayPlayer.Population - todayPlayer.Population;
+                    history.ChangeAlliance = todayPlayer.AllianceId != yesterdayPlayer.AllianceId;
+                    history.ChangePopulation = todayPlayer.Population - yesterdayPlayer.Population;
                 }
                 yield return history;
             }
@@ -134,7 +134,7 @@ namespace VillageCrawler.Extensions
                 var exist = yesterdayVillages.TryGetValue(todayVillage.Id, out var yesterdayVillage);
                 if (exist && yesterdayVillage is not null)
                 {
-                    history.ChangePopulation = yesterdayVillage.Population - todayVillage.Population;
+                    history.ChangePopulation = todayVillage.Population - yesterdayVillage.Population;
                 }
                 yield return history;
             }
