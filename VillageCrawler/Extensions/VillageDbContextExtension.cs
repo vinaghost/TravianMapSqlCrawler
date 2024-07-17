@@ -18,11 +18,10 @@ namespace VillageCrawler.Extensions
 
             if (!await context.AlliancesHistory.AnyAsync(x => x.Date == EF.Constant(Today), cancellationToken))
             {
-                var oldAlliances = await context.AlliancesHistory
-                    .Where(x => x.Date == EF.Constant(Yesterday))
+                var oldAlliances = await context.Alliances
                     .Select(x => new AllianceHistory
                     {
-                        AllianceId = x.AllianceId,
+                        AllianceId = x.Id,
                         PlayerCount = x.PlayerCount,
                     })
                     .ToDictionaryAsync(x => x.AllianceId, x => x, cancellationToken);
@@ -60,11 +59,10 @@ namespace VillageCrawler.Extensions
 
             if (!await context.PlayersHistory.AnyAsync(x => x.Date == EF.Constant(Today), cancellationToken))
             {
-                var oldPlayers = await context.PlayersHistory
-                    .Where(x => x.Date == EF.Constant(Yesterday))
+                var oldPlayers = await context.Players
                     .Select(x => new PlayerHistory
                     {
-                        PlayerId = x.PlayerId,
+                        PlayerId = x.Id,
                         AllianceId = x.AllianceId,
                         Population = x.Population,
                     })
@@ -107,10 +105,9 @@ namespace VillageCrawler.Extensions
             if (!await context.VillagesHistory.AnyAsync(x => x.Date == EF.Constant(Today), cancellationToken))
             {
                 var oldVillages = await context.VillagesHistory
-                    .Where(x => x.Date == EF.Constant(Yesterday))
-                    .Select(x => new VillageHistory
+                    .Select(x => new Village
                     {
-                        VillageId = x.VillageId,
+                        VillageId = x.Id,
                         Population = x.Population,
                     })
                     .ToDictionaryAsync(x => x.VillageId, x => x, cancellationToken);
