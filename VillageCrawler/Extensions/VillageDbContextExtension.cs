@@ -8,13 +8,10 @@ namespace VillageCrawler.Extensions
     public static class VillageDbContextExtension
     {
         private static readonly DateTime Today = DateTime.Today;
-        private static readonly DateTime Yesterday = Today.AddDays(-1);
 
         public static async Task UpdateAlliance(this VillageDbContext context, IList<RawVillage> rawVillages, CancellationToken cancellationToken)
         {
             var alliances = rawVillages.GetAlliances();
-
-            await context.BulkMergeAsync(alliances);
 
             if (!await context.AlliancesHistory.AnyAsync(x => x.Date == EF.Constant(Today), cancellationToken))
             {
@@ -27,7 +24,14 @@ namespace VillageCrawler.Extensions
                     .ToDictionaryAsync(x => x.AllianceId, x => x, cancellationToken);
 
                 var validAlliances = AllianceHistoryHandle(alliances, oldAlliances);
+
+                // synchronize today data before insert history to prevent missing key error
+                await context.BulkMergeAsync(alliances);
                 await context.BulkInsertAsync(validAlliances, cancellationToken);
+            }
+            else
+            {
+                await context.BulkMergeAsync(alliances);
             }
         }
 
@@ -55,8 +59,6 @@ namespace VillageCrawler.Extensions
         {
             var players = rawVillages.GetPlayers();
 
-            await context.BulkSynchronizeAsync(players, cancellationToken);
-
             if (!await context.PlayersHistory.AnyAsync(x => x.Date == EF.Constant(Today), cancellationToken))
             {
                 var oldPlayers = await context.Players
@@ -70,7 +72,13 @@ namespace VillageCrawler.Extensions
 
                 var validPlayers = PlayerHistoryHandle(players, oldPlayers);
 
+                // synchronize today data before insert history to prevent missing key error
+                await context.BulkSynchronizeAsync(players, cancellationToken);
                 await context.BulkInsertAsync(validPlayers, cancellationToken);
+            }
+            else
+            {
+                await context.BulkSynchronizeAsync(players, cancellationToken);
             }
         }
 
@@ -100,8 +108,6 @@ namespace VillageCrawler.Extensions
         {
             var villages = rawVillages.GetVillages();
 
-            await context.BulkSynchronizeAsync(villages, cancellationToken);
-
             if (!await context.VillagesHistory.AnyAsync(x => x.Date == EF.Constant(Today), cancellationToken))
             {
                 var oldVillages = await context.Villages
@@ -113,7 +119,14 @@ namespace VillageCrawler.Extensions
                     .ToDictionaryAsync(x => x.VillageId, x => x, cancellationToken);
 
                 var validVillages = VillageHistoryHandle(villages, oldVillages);
+
+                // synchronize today data before insert history to prevent missing key error
+                await context.BulkSynchronizeAsync(villages, cancellationToken);
                 await context.BulkInsertAsync(validVillages, cancellationToken);
+            }
+            else
+            {
+                await context.BulkSynchronizeAsync(villages, cancellationToken);
             }
         }
 
