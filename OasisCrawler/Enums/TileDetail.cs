@@ -1,0 +1,31 @@
+﻿namespace OasisCrawler.Enums
+{
+    public enum TileDetail
+    {
+        None,
+        Wood,
+        Clay,
+        Iron,
+        Crop,
+        WoodCrop,
+        ClayCrop,
+        IronCrop,
+        WoodWood,
+        ClayClay,
+        IronIron,
+        CropCrop,
+        V3339,
+        V3456,
+        V4446,
+        V4536,
+        V5346,
+        V11115,
+        V4437,
+        V3447,
+        V4347,
+        V3546,
+        V4356,
+        V5436,
+        Natar
+    }
+}
