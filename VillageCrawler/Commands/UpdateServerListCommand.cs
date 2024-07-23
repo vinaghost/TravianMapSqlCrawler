@@ -1,5 +1,4 @@
 ﻿using MediatR;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using VillageCrawler.DbContexts;
 using VillageCrawler.Entities;
@@ -19,15 +18,15 @@ namespace VillageCrawler.Commands
             await context.Database.EnsureCreatedAsync(cancellationToken);
             await context.BulkSynchronizeAsync(request.Servers);
 
-            var servers = await context.Servers
-                .Where(x => x.LastUpdate < EF.Constant(DateTime.Now.AddDays(-7)))
-                .Select(x => x.Url)
-                .ToListAsync(cancellationToken);
+            //var servers = await context.Servers
+            //    .Where(x => x.LastUpdate < EF.Constant(DateTime.Now.AddDays(-7)))
+            //    .Select(x => x.Url)
+            //    .ToListAsync(cancellationToken);
 
-            foreach (var server in servers)
-            {
-                await DeleteVillageDatabase(server, cancellationToken);
-            }
+            //foreach (var server in servers)
+            //{
+            //    await DeleteVillageDatabase(server, cancellationToken);
+            //}
         }
 
         private async Task DeleteVillageDatabase(string url, CancellationToken cancellationToken)
