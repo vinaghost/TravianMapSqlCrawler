@@ -38,7 +38,7 @@ namespace VillageCrawler
                 if (server is null) return;
                 servers.Enqueue(server);
                 totalRuntime += sw.ElapsedMilliseconds;
-                _logger.LogInformation("Updated {Url} in {Time}s", validServer.Url, sw.ElapsedMilliseconds / 1000);
+                _logger.LogInformation("Updated {Url} in {Time}s [{LastUpdate}]", server.Url, sw.ElapsedMilliseconds / 1000, server.LastUpdate);
             });
 
             mainSw.Stop();
