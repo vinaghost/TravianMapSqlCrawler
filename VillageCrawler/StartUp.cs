@@ -25,6 +25,10 @@ namespace VillageCrawler
             var validServers = await _mediator.Send(new ValidateServerCommand(), cancellationToken);
             var servers = new ConcurrentQueue<Server>();
 
+            var mainSw = new Stopwatch();
+            mainSw.Start();
+
+            long totalRuntime = 0;
             await Parallel.ForEachAsync(validServers, async (validServer, token) =>
             {
                 var sw = new Stopwatch();
@@ -33,8 +37,14 @@ namespace VillageCrawler
                 sw.Stop();
                 if (server is null) return;
                 servers.Enqueue(server);
+                totalRuntime += sw.ElapsedMilliseconds;
                 _logger.LogInformation("Updated {Url} in {Time}s", validServer.Url, sw.ElapsedMilliseconds / 1000);
             });
+
+            mainSw.Stop();
+
+            _logger.LogInformation("Runtime: {Minutes}m {Seconds}s", mainSw.ElapsedMilliseconds / 1000 / 60, (mainSw.ElapsedMilliseconds / 1000) % 60);
+            _logger.LogInformation("Total runtime of all servers: {Minutes}m {Seconds}s", totalRuntime / 1000 / 60, (totalRuntime / 1000) % 60);
 
             await _mediator.Send(new UpdateServerListCommand([.. servers]), cancellationToken);
 
