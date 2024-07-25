@@ -46,9 +46,15 @@ namespace VillageCrawler
             _logger.LogInformation("Runtime: {Minutes}m {Seconds}s", mainSw.ElapsedMilliseconds / 1000 / 60, (mainSw.ElapsedMilliseconds / 1000) % 60);
             _logger.LogInformation("Total runtime of all servers: {Minutes}m {Seconds}s", totalRuntime / 1000 / 60, (totalRuntime / 1000) % 60);
 
+            var data = servers.OrderByDescending(x => x.PlayerCount).ToList();
+            ConsoleTable
+                .From(data)
+                .Configure(o => o.NumberAlignment = Alignment.Right)
+                .Write(Format.Alternative);
+
             await _mediator.Send(new UpdateServerListCommand([.. servers]), cancellationToken);
 
-            var data = servers.OrderByDescending(x => x.PlayerCount).ToList();
+            data = servers.OrderByDescending(x => x.PlayerCount).ToList();
             ConsoleTable
                 .From(data)
                 .Configure(o => o.NumberAlignment = Alignment.Right)

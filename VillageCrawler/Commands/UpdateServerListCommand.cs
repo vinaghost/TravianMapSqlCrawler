@@ -24,6 +24,10 @@ namespace VillageCrawler.Commands
                 .Select(x => x.Url)
                 .ToListAsync(cancellationToken);
 
+            await context.Servers
+                .Where(x => x.LastUpdate < DateTime.Now.AddDays(-7))
+                .ExecuteDeleteAsync(cancellationToken);
+
             foreach (var server in servers)
             {
                 await DeleteVillageDatabase(server, cancellationToken);
