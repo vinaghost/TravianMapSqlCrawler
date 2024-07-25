@@ -17,7 +17,7 @@ namespace VillageCrawler.Commands
         {
             using var context = new ServerDbContext(_connections.Server);
             await context.Database.EnsureCreatedAsync(cancellationToken);
-            await context.BulkSynchronizeAsync(request.Servers);
+            await context.BulkMergeAsync(request.Servers);
 
             var servers = await context.Servers
                 .Where(x => x.LastUpdate < DateTime.Now.AddDays(-7))
