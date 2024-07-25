@@ -34,6 +34,11 @@ namespace VillageCrawler.Commands
                 server.LastUpdate = newServer.LastUpdate;
             }
 
+            var newServers = request.Servers
+                .Where(x => !servers.Exists(y => y.Url == x.Url))
+                .ToList();
+
+            await context.AddRangeAsync(newServers, cancellationToken);
             await context.BulkSaveChangesAsync(cancellationToken);
 
             var timeoutServers = await context.Servers
