@@ -38,7 +38,6 @@ namespace VillageCrawler.DbContexts
                 .EnableSensitiveDataLogging()
                 .EnableDetailedErrors()
 #endif
-                .UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking)
                 .UseMySql(connectionString, ServerVersion.AutoDetect(connectionString));
 
             return optionsBuilder.Options;
