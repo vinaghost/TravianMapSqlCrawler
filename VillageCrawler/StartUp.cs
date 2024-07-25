@@ -38,7 +38,7 @@ namespace VillageCrawler
                 if (server is null) return;
                 servers.Enqueue(server);
                 totalRuntime += sw.ElapsedMilliseconds;
-                _logger.LogInformation("Updated {Url} in {Time}s [{LastUpdate}]", server.Url, sw.ElapsedMilliseconds / 1000, server.LastUpdate);
+                _logger.LogInformation("Updated {Url} in {Time}s", server.Url, sw.ElapsedMilliseconds / 1000);
             });
 
             mainSw.Stop();
@@ -86,12 +86,16 @@ namespace VillageCrawler
             var allianceCount = await context.Alliances.CountAsync(cancellationToken: cancellationToken);
             var playerCount = await context.Players.CountAsync(cancellationToken: cancellationToken);
             var villageCount = await context.Villages.CountAsync(cancellationToken: cancellationToken);
-
-            server.AllianceCount = allianceCount;
-            server.PlayerCount = playerCount;
-            server.VillageCount = villageCount;
-            server.LastUpdate = DateTime.Now;
-            return server;
+            var now = DateTime.Now;
+            return new Server()
+            {
+                Id = server.Id,
+                Url = server.Url,
+                AllianceCount = allianceCount,
+                PlayerCount = playerCount,
+                VillageCount = villageCount,
+                LastUpdate = now
+            };
         }
     }
 }
