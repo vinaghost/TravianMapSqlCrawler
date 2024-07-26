@@ -1,6 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using OasisCrawler.Enums;
-using System.ComponentModel.DataAnnotations.Schema;
 
 namespace OasisCrawler.Entities
 {
@@ -9,15 +8,27 @@ namespace OasisCrawler.Entities
     [Index(nameof(Type), nameof(Detail))]
     public class Oasis
     {
-        public const int MapSize = 200;
-
-        [DatabaseGenerated(DatabaseGeneratedOption.None)]
-        public int Id => 1 + ((200 - Y) * (MapSize * 2 + 1)) + MapSize + Y;
+        public int Id { get; set; }
 
         public int X { get; set; }
         public int Y { get; set; }
 
         public TileType Type { get; set; }
         public TileDetail Detail { get; set; }
+    }
+
+    public static class OasisExtensions
+    {
+        public const int MapSize = 200;
+
+        public static Oasis Create(int x, int y, TileType type, TileDetail detail)
+            => new()
+            {
+                Id = 1 + ((200 - y) * (MapSize * 2 + 1)) + MapSize + x,
+                X = x,
+                Y = y,
+                Type = type,
+                Detail = detail
+            };
     }
 }
