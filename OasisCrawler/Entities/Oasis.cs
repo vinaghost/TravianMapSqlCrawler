@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using OasisCrawler.Enums;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace OasisCrawler.Entities
 {
@@ -8,6 +9,7 @@ namespace OasisCrawler.Entities
     [Index(nameof(Type), nameof(Detail))]
     public class Oasis
     {
+        [DatabaseGenerated(DatabaseGeneratedOption.None)]
         public int Id { get; set; }
 
         public int X { get; set; }

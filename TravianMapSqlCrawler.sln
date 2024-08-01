@@ -7,7 +7,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "VillageCrawler", "VillageCr
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ServerCrawler", "ServerCrawler\ServerCrawler.csproj", "{7890E05C-9A57-400D-BE93-F1325984B930}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OasisCrawler", "OasisCrawler\OasisCrawler.csproj", "{87EC2AD1-08BB-475C-8663-789C79A028F5}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OasisCrawler", "OasisCrawler\OasisCrawler.csproj", "{DC365930-4022-440F-BAA6-734355714433}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -23,10 +23,10 @@ Global
 		{7890E05C-9A57-400D-BE93-F1325984B930}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{7890E05C-9A57-400D-BE93-F1325984B930}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{7890E05C-9A57-400D-BE93-F1325984B930}.Release|Any CPU.Build.0 = Release|Any CPU
-		{87EC2AD1-08BB-475C-8663-789C79A028F5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{87EC2AD1-08BB-475C-8663-789C79A028F5}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{87EC2AD1-08BB-475C-8663-789C79A028F5}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{87EC2AD1-08BB-475C-8663-789C79A028F5}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DC365930-4022-440F-BAA6-734355714433}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DC365930-4022-440F-BAA6-734355714433}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DC365930-4022-440F-BAA6-734355714433}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DC365930-4022-440F-BAA6-734355714433}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

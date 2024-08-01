@@ -1,6 +1,6 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using VillageCrawler.Models.Options;
+using OasisCrawler.Models.Options;
 
 namespace OasisCrawler.Extensions
 {

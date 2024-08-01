@@ -20,5 +20,11 @@ namespace OasisCrawler.DbContexts
 
             return optionsBuilder.Options;
         }
+
+        public override void Dispose()
+        {
+            Database.CloseConnection();
+            base.Dispose();
+        }
     }
 }
