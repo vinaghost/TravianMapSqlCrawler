@@ -50,7 +50,7 @@ namespace VillageCrawler.Commands
             _logger.LogInformation("Deleting {Count} servers: {Servers}", timeoutServers.Count, timeoutServers);
 
             await context.Servers
-                .WhereBulkContains(timeoutServers.Select(x => x.Id))
+                .Where(x => timeoutServers.Select(x => x.Id).Contains(x.Id))
                 .ExecuteDeleteAsync(cancellationToken);
 
             foreach (var server in timeoutServers)
