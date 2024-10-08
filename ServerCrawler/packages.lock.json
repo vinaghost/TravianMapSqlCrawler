@@ -4,9 +4,12 @@
     "net8.0": {
       "ConsoleTables": {
         "type": "Direct",
-        "requested": "[2.6.1, )",
-        "resolved": "2.6.1",
-        "contentHash": "TyU885plpk88kMxgayy5+QQvtt/t3ZR45+vSvaKqZiaK+YsGVE6Mv7sV3fwjUMv3jHT15DdkpxW/+o+uc+bAJQ=="
+        "requested": "[2.6.2, )",
+        "resolved": "2.6.2",
+        "contentHash": "/bH4u0Lni2FPUtGvg1oAKpsEzmhhBlqj0DD67kvV/4qELaEBXDbVo9w3lHFQFe00vLEAZi+5Rr8Nai0D2z7+bg==",
+        "dependencies": {
+          "Wcwidth": "1.0.0"
+        }
       },
       "Discord.Net.Webhook": {
         "type": "Direct",
@@ -20,9 +23,9 @@
       },
       "HtmlAgilityPack": {
         "type": "Direct",
-        "requested": "[1.11.66, )",
-        "resolved": "1.11.66",
-        "contentHash": "kRlJ/rnvDzSPZv294uR+k3IR04eQO1IxdYJuUPPFETZ0W2NDDRiuZlfgYaDX17OVvODJFWj6+lsMOko/Xj5XVQ=="
+        "requested": "[1.11.67, )",
+        "resolved": "1.11.67",
+        "contentHash": "xnt6f8E56oK9nLqgkF42bsVSAkUuIuJnSfvzimK7GwvbhdXWRmGsx4A8AKmLOlCUq1rVSUADKalxnSMizHt4Mg=="
       },
       "MediatR": {
         "type": "Direct",
@@ -151,9 +154,9 @@
       },
       "Serilog": {
         "type": "Direct",
-        "requested": "[4.0.1, )",
-        "resolved": "4.0.1",
-        "contentHash": "pzeDRXdpSLSsgBHpZcmpIDxqMy845Ab4s+dfnBg0sN9h8q/4Wo3vAoe0QCGPze1Q06EVtEPupS+UvLm8iXQmTQ=="
+        "requested": "[4.0.2, )",
+        "resolved": "4.0.2",
+        "contentHash": "Vehq4uNYtURe/OnHEpWGvMgrvr5Vou7oZLdn3BuEH5FSCeHXDpNJtpzWoqywXsSvCTuiv0I65mZDRnJSeUvisA=="
       },
       "Serilog.Extensions.Hosting": {
         "type": "Direct",
@@ -170,9 +173,9 @@
       },
       "Serilog.Settings.Configuration": {
         "type": "Direct",
-        "requested": "[8.0.2, )",
-        "resolved": "8.0.2",
-        "contentHash": "hn8HCAmupon7N0to20EwGeNJ+L3iRzjGzAHIl8+8CCFlEkVedHvS6NMYMb0VPNMsDgDwOj4cPBPV6Fc2hb0/7w==",
+        "requested": "[8.0.3, )",
+        "resolved": "8.0.3",
+        "contentHash": "zDVHRxhhLgZN0mhGbXAQQUrVgDhYhIGX2OyrTyWGQSTq8NWViytgjtPbZuUSSnCrmOzmIh4d1gaKo2WqPC5iLw==",
         "dependencies": {
           "Microsoft.Extensions.Configuration.Binder": "8.0.0",
           "Microsoft.Extensions.DependencyModel": "8.0.1",
@@ -551,6 +554,11 @@
         "type": "Transitive",
         "resolved": "4.5.0",
         "contentHash": "okurQJO6NRE/apDIP23ajJ0hpiNmJ+f0BwOlB/cSqTLQlw5upkf+5+96+iG2Jw40G1fCVCyPz/FhIABUjMR+RQ=="
+      },
+      "Wcwidth": {
+        "type": "Transitive",
+        "resolved": "1.0.0",
+        "contentHash": "aekut5BeF4c1Jr2qab3aXcttcgPEfPb2ok2L8911EIzn3RnDBYnUWgx/1OVlqrSXCdwAkBpNgYWXb6b5t4cBng=="
       }
     },
     "net8.0/linux-x64": {
