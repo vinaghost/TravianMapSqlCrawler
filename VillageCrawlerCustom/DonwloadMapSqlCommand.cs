@@ -1,6 +1,6 @@
 ﻿namespace VillageCrawlerCustom
 {
-    public class DonwloadMapSqlCommand
+    public static class DonwloadMapSqlCommand
     {
         public static async Task<IList<RawVillage>> Handle(string url)
         {
