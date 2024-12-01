@@ -13,9 +13,9 @@
       },
       "HtmlAgilityPack": {
         "type": "Direct",
-        "requested": "[1.11.70, )",
-        "resolved": "1.11.70",
-        "contentHash": "lwCgdq4H+WXH+lkM7TvJhyEs5uNGzoTud1VmXz2jr30/yOTRtG/oMCour5JMTN0t0fU4uFwFYIrDd98FH2RKsQ=="
+        "requested": "[1.11.71, )",
+        "resolved": "1.11.71",
+        "contentHash": "HlEThQBnob4/29DIiyrPSYlGXXSZUtOH7571PRev+yu8FW8n5pdxqHyun+PMm17cp3ovCrxFhXedC+1HUSdRMA=="
       },
       "MediatR": {
         "type": "Direct",
@@ -188,9 +188,9 @@
       },
       "Z.EntityFramework.Extensions.EFCore": {
         "type": "Direct",
-        "requested": "[8.103.6, )",
-        "resolved": "8.103.6",
-        "contentHash": "R3a+aS/IVIyfForaYnv4eaxf7OGIJ7yVLWMvb5LmCRW2f9SYtj4sE4lUfEhb3bUvUuMpuXvWElPhV3sb/UyJDQ==",
+        "requested": "[8.103.6.3, )",
+        "resolved": "8.103.6.3",
+        "contentHash": "RWpyjO5c/w6p83HkxeA5Oe9nmFN8pU3dXOxnPh3bMnlGrr85TJqFd9+iiMxKYsWmeP9uWkHUOgh6IVQaR9WMqA==",
         "dependencies": {
           "Microsoft.EntityFrameworkCore.Relational": "[8.0.0, 9.0.0)",
           "System.Configuration.ConfigurationManager": "8.0.0"
