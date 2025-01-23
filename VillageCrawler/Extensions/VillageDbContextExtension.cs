@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using EFCore.BulkExtensions;
+using Microsoft.EntityFrameworkCore;
 using VillageCrawler.DbContexts;
 using VillageCrawler.Entities;
 using VillageCrawler.Models;
@@ -26,12 +27,12 @@ namespace VillageCrawler.Extensions
                 var validAlliances = AllianceHistoryHandle(alliances, oldAlliances);
 
                 // synchronize today data before insert history to prevent missing key error
-                await context.BulkMergeAsync(alliances);
-                await context.BulkInsertAsync(validAlliances, cancellationToken);
+                await context.BulkInsertOrUpdateAsync(alliances, cancellationToken: cancellationToken);
+                await context.BulkInsertAsync(validAlliances, cancellationToken: cancellationToken);
             }
             else
             {
-                await context.BulkMergeAsync(alliances);
+                await context.BulkInsertOrUpdateAsync(alliances);
             }
         }
 
@@ -73,12 +74,12 @@ namespace VillageCrawler.Extensions
                 var validPlayers = PlayerHistoryHandle(players, oldPlayers);
 
                 // synchronize today data before insert history to prevent missing key error
-                await context.BulkSynchronizeAsync(players, cancellationToken);
-                await context.BulkInsertAsync(validPlayers, cancellationToken);
+                await context.BulkInsertOrUpdateOrDeleteAsync(players, cancellationToken: cancellationToken);
+                await context.BulkInsertAsync(validPlayers, cancellationToken: cancellationToken);
             }
             else
             {
-                await context.BulkSynchronizeAsync(players, cancellationToken);
+                await context.BulkInsertOrUpdateOrDeleteAsync(players, cancellationToken: cancellationToken);
             }
         }
 
@@ -121,12 +122,12 @@ namespace VillageCrawler.Extensions
                 var validVillages = VillageHistoryHandle(villages, oldVillages);
 
                 // synchronize today data before insert history to prevent missing key error
-                await context.BulkSynchronizeAsync(villages, cancellationToken);
-                await context.BulkInsertAsync(validVillages, cancellationToken);
+                await context.BulkInsertOrUpdateOrDeleteAsync(villages, cancellationToken: cancellationToken);
+                await context.BulkInsertAsync(validVillages, cancellationToken: cancellationToken);
             }
             else
             {
-                await context.BulkSynchronizeAsync(villages, cancellationToken);
+                await context.BulkInsertOrUpdateOrDeleteAsync(villages, cancellationToken: cancellationToken);
             }
         }
 

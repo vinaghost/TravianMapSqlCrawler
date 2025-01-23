@@ -1,4 +1,5 @@
-﻿using MediatR;
+﻿using EFCore.BulkExtensions;
+using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -39,7 +40,7 @@ namespace VillageCrawler.Commands
                 .ToList();
 
             await context.AddRangeAsync(newServers, cancellationToken);
-            await context.BulkSaveChangesAsync(cancellationToken);
+            await context.BulkSaveChangesAsync(cancellationToken: cancellationToken);
 
             var timeoutServers = await context.Servers
                 .Where(x => x.LastUpdate < DateTime.Now.AddDays(-7))
