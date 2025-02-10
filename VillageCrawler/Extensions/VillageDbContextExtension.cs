@@ -74,12 +74,12 @@ namespace VillageCrawler.Extensions
                 var validPlayers = PlayerHistoryHandle(players, oldPlayers);
 
                 // synchronize today data before insert history to prevent missing key error
-                await context.BulkInsertOrUpdateOrDeleteAsync(players, cancellationToken: cancellationToken);
+                await context.BulkInsertOrUpdateAsync(players, cancellationToken: cancellationToken);
                 await context.BulkInsertAsync(validPlayers, cancellationToken: cancellationToken);
             }
             else
             {
-                await context.BulkInsertOrUpdateOrDeleteAsync(players, cancellationToken: cancellationToken);
+                await context.BulkInsertOrUpdateAsync(players, cancellationToken: cancellationToken);
             }
         }
 
@@ -122,12 +122,12 @@ namespace VillageCrawler.Extensions
                 var validVillages = VillageHistoryHandle(villages, oldVillages);
 
                 // synchronize today data before insert history to prevent missing key error
-                await context.BulkInsertOrUpdateOrDeleteAsync(villages, cancellationToken: cancellationToken);
+                await context.BulkInsertOrUpdateAsync(villages, cancellationToken: cancellationToken);
                 await context.BulkInsertAsync(validVillages, cancellationToken: cancellationToken);
             }
             else
             {
-                await context.BulkInsertOrUpdateOrDeleteAsync(villages, cancellationToken: cancellationToken);
+                await context.BulkInsertOrUpdateAsync(villages, cancellationToken: cancellationToken);
             }
         }
 
