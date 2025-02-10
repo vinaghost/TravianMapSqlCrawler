@@ -1,4 +1,5 @@
 ﻿using MediatR;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using VillageCrawler.DbContexts;
 using VillageCrawler.Models.Options;
@@ -16,6 +17,8 @@ namespace VillageCrawler.Commands
         {
             var context = new VillageDbContext(_connections.Server, request.Url);
             await context.Database.EnsureCreatedAsync(cancellationToken);
+
+            await context.Database.ExecuteSqlRawAsync("SET GLOBAL local_infile = true;", cancellationToken);
             return context;
         }
     }
