@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.Hosting;
+﻿using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Serilog;
 
 namespace App
@@ -10,6 +11,16 @@ namespace App
             {
                 services.AddSerilog(c => c
                     .ReadFrom.Configuration(hostBuilderContext.Configuration));
+            });
+
+        public static IHostBuilder ConfigureServices(this IHostBuilder hostBuilder) =>
+            hostBuilder.ConfigureServices((services) =>
+            {
+                services.AddHostedService<MainService>();
+
+                services.AddHttpClient();
+                services.AddAppHandlers();
+                services.AddAppBehaviors();
             });
     }
 }
