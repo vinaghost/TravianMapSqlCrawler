@@ -10,6 +10,7 @@ try
 {
     var host = Host.CreateDefaultBuilder(args)
         .UseConsoleLifetime()
+        .BindConfiguration()
         .ConfigureLogging()
         .ConfigureServices()
         .Build();
