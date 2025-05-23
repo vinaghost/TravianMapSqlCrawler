@@ -2,6 +2,15 @@
   "version": 1,
   "dependencies": {
     "net8.0": {
+      "ConsoleTables": {
+        "type": "Direct",
+        "requested": "[2.6.2, )",
+        "resolved": "2.6.2",
+        "contentHash": "/bH4u0Lni2FPUtGvg1oAKpsEzmhhBlqj0DD67kvV/4qELaEBXDbVo9w3lHFQFe00vLEAZi+5Rr8Nai0D2z7+bg==",
+        "dependencies": {
+          "Wcwidth": "1.0.0"
+        }
+      },
       "EFCore.BulkExtensions.MySql": {
         "type": "Direct",
         "requested": "[8.1.3, )",
@@ -511,6 +520,11 @@
           "System.IO.Pipelines": "9.0.5",
           "System.Text.Encodings.Web": "9.0.5"
         }
+      },
+      "Wcwidth": {
+        "type": "Transitive",
+        "resolved": "1.0.0",
+        "contentHash": "aekut5BeF4c1Jr2qab3aXcttcgPEfPb2ok2L8911EIzn3RnDBYnUWgx/1OVlqrSXCdwAkBpNgYWXb6b5t4cBng=="
       }
     },
     "net8.0/linux-x64": {

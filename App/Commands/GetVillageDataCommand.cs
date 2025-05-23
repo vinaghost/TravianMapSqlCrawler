@@ -5,7 +5,7 @@ using System.Text;
 namespace App.Commands
 {
     [Handler]
-    public static partial class GetServerDataCommand
+    public static partial class GetVillageDataCommand
     {
         public sealed record Command(StreamReader StreamReader);
 

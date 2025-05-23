@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using App.Models;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Serilog;
 
@@ -13,10 +14,17 @@ namespace App
                     .ReadFrom.Configuration(hostBuilderContext.Configuration));
             });
 
+        public static IHostBuilder BindConfiguration(this IHostBuilder hostBuilder) =>
+            hostBuilder.ConfigureServices((hostBuilderContext, services) =>
+            {
+                services.Configure<ConnectionStrings>(hostBuilderContext.Configuration.GetSection(nameof(ConnectionStrings)));
+            });
+
         public static IHostBuilder ConfigureServices(this IHostBuilder hostBuilder) =>
             hostBuilder.ConfigureServices((services) =>
             {
                 services.AddHostedService<MainService>();
+                services.AddScoped<DataService>();
 
                 services.AddHttpClient();
                 services.AddAppHandlers();

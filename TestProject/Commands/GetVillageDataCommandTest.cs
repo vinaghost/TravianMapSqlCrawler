@@ -3,7 +3,7 @@ using Shouldly;
 
 namespace TestProject.Commands
 {
-    public class GetServerDataCommandTest
+    public class GetVillageDataCommandTest
     {
         [Fact]
         public async Task ReturnsListOfRawVillage()
@@ -12,7 +12,7 @@ namespace TestProject.Commands
             var content = File.OpenRead("TestData/map.sql");
             var streamReader = new StreamReader(content);
 
-            var handleBehavior = new GetServerDataCommand.HandleBehavior();
+            var handleBehavior = new GetVillageDataCommand.HandleBehavior();
 
             // Act
             var result = await handleBehavior.HandleAsync(new(streamReader), CancellationToken.None);
