@@ -38,7 +38,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Update="HtmlFiles\*.html">
+    <None Update="TestData\*">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>
