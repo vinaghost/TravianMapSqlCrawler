@@ -1,5 +1,4 @@
 <Solution>
   <Project Path="App/App.csproj" Id="97fd6552-61bf-43ad-b235-0015401f4d5b" />
   <Project Path="TestProject/TestProject.csproj" Id="d1c43998-9757-4882-a975-6633fdaefc6f" />
-  <Project Path="VillageCrawler/VillageCrawler.csproj" />
 </Solution>
