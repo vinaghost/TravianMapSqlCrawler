@@ -4,6 +4,8 @@
 # SETTINGS_FILE
 # PAT
 name: Run Docker build of Village Crawler
+permissions:
+  contents: read
 on:
   workflow_dispatch:
   schedule:
