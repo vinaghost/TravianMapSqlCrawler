@@ -24,7 +24,7 @@ jobs:
       - name: Build and push update image
         uses: docker/build-push-action@v6
         with:
-          file: ./VillageCrawler/Dockerfile
+          file: ./App/Dockerfile
           context: .
           push: true
           tags: ${{ secrets.DOCKERHUB_USERNAME }}/villagecrawler:latest

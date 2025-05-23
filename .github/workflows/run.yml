@@ -9,8 +9,8 @@ on:
   schedule:
   # from RELEASE POLARBEAR 1171.1, map.sql is updated every midnight server time
   # (which is 00:00 GMT+1 or 23:00 GMT)
-  # we execute after 1 hour to make sure map.sql updated
-    - cron:  00 00 * * *
+  # we execute after 2 hour to make sure map.sql updated 
+    - cron:  00 02 * * *
 jobs:
   run:
     runs-on: ubuntu-latest
