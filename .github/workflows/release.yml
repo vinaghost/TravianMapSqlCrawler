@@ -3,6 +3,8 @@
 # DOCKERHUB_TOKEN
 
 name: Build and push Village Crawler image
+permissions:
+  contents: read
 on:
   workflow_dispatch:
 jobs:
