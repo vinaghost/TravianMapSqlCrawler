@@ -55,7 +55,7 @@ namespace App
             mainSw.Stop();
 
             _logger.LogInformation("Runtime: {Minutes}m {Seconds}s", mainSw.ElapsedMilliseconds / 1000 / 60, (mainSw.ElapsedMilliseconds / 1000) % 60);
-            _logger.LogInformation("Total runtime of all servers: {Minutes}m {Seconds}s", totalRuntime / 1000 / 60, (totalRuntime / 1000) % 60);
+            _logger.LogInformation("Total runtime of {count} servers: {Minutes}m {Seconds}s", servers.Count, totalRuntime / 1000 / 60, (totalRuntime / 1000) % 60);
 
             var data = servers.OrderByDescending(x => x.PlayerCount).ToList();
             ConsoleTable

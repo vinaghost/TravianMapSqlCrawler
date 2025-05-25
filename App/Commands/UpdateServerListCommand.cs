@@ -39,7 +39,7 @@ namespace App.Commands
             }
 
             var newServers = servers
-                .Where(x => !servers.Exists(y => y.Url == x.Url))
+                .Where(x => !dbServers.Exists(y => y.Url == x.Url))
                 .ToList();
 
             context.UpdateRange(dbServers);
