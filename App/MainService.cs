@@ -40,16 +40,24 @@ namespace App
             var updateVillageDatabaseCommand = scope.ServiceProvider.GetRequiredService<UpdateVillageDatabaseCommand.Handler>();
             await Parallel.ForEachAsync(ServerUrls, async (ServerUrl, token) =>
             {
-                var sw = new Stopwatch();
-                sw.Start();
-                var mapSql = await getMapSqlCommand.HandleAsync(new(ServerUrl), cancellationToken);
-                var villages = await getVillageDataCommand.HandleAsync(new(mapSql), cancellationToken);
-                var server = await updateVillageDatabaseCommand.HandleAsync(new(ServerUrl, villages), cancellationToken);
-                sw.Stop();
-                if (server is null) return;
-                servers.Enqueue(server);
-                totalRuntime += sw.ElapsedMilliseconds;
-                _logger.LogInformation("Updated {Url} in {Time}s", ServerUrl, sw.ElapsedMilliseconds / 1000);
+                try
+                {
+                    var sw = new Stopwatch();
+                    sw.Start();
+                    var mapSql = await getMapSqlCommand.HandleAsync(new(ServerUrl), cancellationToken);
+                    var villages = await getVillageDataCommand.HandleAsync(new(mapSql), cancellationToken);
+                    var server = await updateVillageDatabaseCommand.HandleAsync(new(ServerUrl, villages), cancellationToken);
+                    sw.Stop();
+                    if (server is null) return;
+                    servers.Enqueue(server);
+                    totalRuntime += sw.ElapsedMilliseconds;
+                    _logger.LogInformation("Updated {Url} in {Time}s", ServerUrl, sw.ElapsedMilliseconds / 1000);
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Error while processing server {Url}", ServerUrl);
+                    return;
+                }
             });
 
             mainSw.Stop();
