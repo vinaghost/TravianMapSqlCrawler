@@ -27,31 +27,21 @@ namespace App
             using var scope = _serviceScopeFactory.CreateScope();
 
             var getServerListCommand = scope.ServiceProvider.GetRequiredService<GetServerListCommand.Handler>();
-            var ServerUrls = await getServerListCommand.HandleAsync(new(), cancellationToken);
+            var serverUrls = await getServerListCommand.HandleAsync(new(), cancellationToken);
 
             var servers = new ConcurrentQueue<Server>();
-
             var mainSw = new Stopwatch();
             mainSw.Start();
 
             long totalRuntime = 0;
-            var getMapSqlCommand = scope.ServiceProvider.GetRequiredService<GetMapSqlCommand.Handler>();
-            var getVillageDataCommand = scope.ServiceProvider.GetRequiredService<GetVillageDataCommand.Handler>();
-            var updateVillageDatabaseCommand = scope.ServiceProvider.GetRequiredService<UpdateVillageDatabaseCommand.Handler>();
-            await Parallel.ForEachAsync(ServerUrls, async (ServerUrl, token) =>
+            var updateServerCommand = scope.ServiceProvider.GetRequiredService<UpdateServerCommand.Handler>();
+            await Parallel.ForEachAsync(serverUrls, async (ServerUrl, token) =>
             {
                 try
                 {
-                    var sw = new Stopwatch();
-                    sw.Start();
-                    var mapSql = await getMapSqlCommand.HandleAsync(new(ServerUrl), cancellationToken);
-                    var villages = await getVillageDataCommand.HandleAsync(new(mapSql), cancellationToken);
-                    var server = await updateVillageDatabaseCommand.HandleAsync(new(ServerUrl, villages), cancellationToken);
-                    sw.Stop();
-                    if (server is null) return;
-                    servers.Enqueue(server);
-                    totalRuntime += sw.ElapsedMilliseconds;
-                    _logger.LogInformation("Updated {Url} in {Time}s", ServerUrl, sw.ElapsedMilliseconds / 1000);
+                    var response = await updateServerCommand.HandleAsync(new(ServerUrl), cancellationToken);
+                    servers.Enqueue(response.Server);
+                    totalRuntime += response.Time;
                 }
                 catch (Exception ex)
                 {
@@ -72,7 +62,7 @@ namespace App
                .Write(Format.Alternative);
 
             var updateServerListCommand = scope.ServiceProvider.GetRequiredService<UpdateServerListCommand.Handler>();
-            await updateServerListCommand.HandleAsync(new([.. servers]), cancellationToken);
+            await updateServerListCommand.HandleAsync(new(servers.Where(x => x.AllianceCount > 0).ToList()), cancellationToken);
 
             _hostApplicationLifetime.StopApplication();
         }

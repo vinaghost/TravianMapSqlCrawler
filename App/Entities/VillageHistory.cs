@@ -15,5 +15,9 @@ namespace App.Entities
         public int Population { get; set; }
 
         public int ChangePopulation { get; set; }
+
+        public int PlayerId { get; set; }
+
+        public bool ChangePlayer { get; set; }
     }
 }
