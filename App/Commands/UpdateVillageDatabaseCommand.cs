@@ -265,14 +265,13 @@ namespace App.Commands
 
             var orphanedVillages = await context.Villages
                .Where(x => !villages.Select(x => x.Id).Contains(x.Id))
-               .Where(x => x.Population != 0 || x.PlayerId != 0)
+               .Where(x => x.Population != 0)
                .Select(x => new { x.Id, x.PlayerId, x.Population })
                .ToListAsync(cancellationToken);
 
             await context.Villages
                 .Where(x => orphanedVillages.Select(o => o.Id).Contains(x.Id))
                 .ExecuteUpdateAsync(x => x
-                    .SetProperty(x => x.PlayerId, 0)
                     .SetProperty(x => x.Population, 0), cancellationToken);
 
             await context.BulkInsertAsync(
@@ -280,8 +279,8 @@ namespace App.Commands
                 {
                     VillageId = x.Id,
                     Date = Today,
-                    PlayerId = 0,
-                    ChangePlayer = x.PlayerId != 0,
+                    PlayerId = x.PlayerId,
+                    ChangePlayer = false,
                     Population = 0,
                     ChangePopulation = -x.Population
                 }), cancellationToken: cancellationToken);
