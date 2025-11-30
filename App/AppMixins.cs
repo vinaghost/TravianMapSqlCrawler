@@ -1,5 +1,4 @@
-﻿using App.Commands;
-using App.Models;
+﻿using App.Models;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Serilog;
@@ -25,9 +24,7 @@ namespace App
             hostBuilder.ConfigureServices((services) =>
             {
                 services.AddHostedService<MainService>();
-                services.AddScoped<DataService>();
-                services.AddHttpClient<GetMapSqlCommand.Handler>();
-                services.AddHttpClient<GetServerListCommand.Handler>();
+                services.AddHttpClient();
                 services.AddAppHandlers();
                 services.AddAppBehaviors();
             });
