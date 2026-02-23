@@ -22,6 +22,7 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
       - name: Run
         run: |
+          docker pull ghcr.io/${{ github.repository_owner }}/travian-lobby-register:latest
           docker run --rm  \
             -v ./.env:/app/.env \
             -v ./credentials.json:/app/credentials.json \
