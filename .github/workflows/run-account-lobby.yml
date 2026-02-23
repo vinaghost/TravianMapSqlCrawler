@@ -4,6 +4,7 @@
 name: Run Docker build of Account Lobby Register
 permissions:
   contents: read
+  packages: read
 on:
   workflow_dispatch:
 jobs:
