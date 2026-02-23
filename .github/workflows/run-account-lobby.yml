@@ -1,0 +1,28 @@
+# secrets required:
+# SETTINGS_URL
+# PAT
+name: Run Docker build of Village Crawler
+permissions:
+  contents: read
+on:
+  workflow_dispatch:
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download setting file
+        run: |
+          curl -s -H "Authorization: token ${{ secrets.PAT }} " ${{ secrets.SETTINGS_URL }}TravianAccountRegister/.env -H "Accept: application/vnd.github.raw" > .env
+          curl -s -H "Authorization: token ${{ secrets.PAT }} " ${{ secrets.SETTINGS_URL }}credentials_service_account_vinabot.json -H "Accept: application/vnd.github.raw" > credentials.json
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Run
+        run: |
+          docker run --rm  \
+            -v ./.env:/app/.env \
+            -v ./credentials.json:/app/credentials.json \
+            ghcr.io/${{ github.repository_owner }}/travian-lobby-register:latest
