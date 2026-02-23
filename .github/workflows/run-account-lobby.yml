@@ -13,8 +13,8 @@ jobs:
     steps:
       - name: Download setting file
         run: |
-          curl -s -H "Authorization: token ${{ secrets.PAT }} " ${{ secrets.SETTINGS_URL }}TravianAccountRegister/.env -H "Accept: application/vnd.github.raw" > .env
-          curl -s -H "Authorization: token ${{ secrets.PAT }} " ${{ secrets.SETTINGS_URL }}credentials_service_account_vinabot.json -H "Accept: application/vnd.github.raw" > credentials.json
+          curl -s -H "Authorization: token ${{ secrets.PAT }} " ${{ secrets.SETTINGS_URL }}/TravianAccountRegister/.env -H "Accept: application/vnd.github.raw" > .env
+          curl -s -H "Authorization: token ${{ secrets.PAT }} " ${{ secrets.SETTINGS_URL }}/credentials_service_account_vinabot.json -H "Accept: application/vnd.github.raw" > credentials.json
       # - name: Log in to GitHub Container Registry
       #   uses: docker/login-action@v3
       #   with:
