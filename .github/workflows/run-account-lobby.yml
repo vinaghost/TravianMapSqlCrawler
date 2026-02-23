@@ -1,7 +1,7 @@
 # secrets required:
 # SETTINGS_URL
 # PAT
-name: Run Docker build of Village Crawler
+name: Run Docker build of Account Lobby Register
 permissions:
   contents: read
 on:
