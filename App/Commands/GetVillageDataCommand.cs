@@ -1,6 +1,7 @@
 ﻿using App.Models;
 using Immediate.Handlers.Shared;
 using System.Text;
+using System.Text.RegularExpressions;
 
 namespace App.Commands
 {
@@ -13,126 +14,106 @@ namespace App.Commands
             Command command,
             CancellationToken cancellationToken)
         {
-            await Task.CompletedTask;
-
             var villages = new List<RawVillage>();
             var streamReader = command.StreamReader;
-            while (!streamReader.EndOfStream)
+
+            // Define batch sizes
+            const int batchSize = 500; // Number of lines per batch
+            const int maxConcurrentBatches = 10; // Number of batches to process concurrently
+
+            var lines = new List<string>(batchSize);
+            var batchTasks = new List<Task<List<RawVillage>>>(maxConcurrentBatches);
+
+            string? line;
+            while ((line = await streamReader.ReadLineAsync(cancellationToken)) is not null)
             {
-                var line = streamReader.ReadLine();
                 if (line is null) continue;
-                var village = GetVillage(line);
-                if (village is null) continue;
-                villages.Add(village);
+                lines.Add(line);
+                if (lines.Count >= batchSize)
+                {
+                    // Create a copy of the lines list and process the batch
+                    var batchCopy = new List<string>(lines);
+                    batchTasks.Add(Task.Run(() => ProcessBatch(batchCopy), cancellationToken));
+                    lines.Clear(); // Reset the lines list
+
+                    // If the maximum number of concurrent batches is reached, await them
+                    if (batchTasks.Count >= maxConcurrentBatches)
+                    {
+                        var completedBatches = await Task.WhenAll(batchTasks);
+                        foreach (var batch in completedBatches)
+                        {
+                            villages.AddRange(batch);
+                        }
+                        batchTasks.Clear(); // Clear the completed tasks
+                    }
+                }
             }
 
+            // Process any remaining lines
+            if (lines.Count > 0)
+            {
+                batchTasks.Add(Task.Run(() => ProcessBatch(lines), cancellationToken));
+            }
+
+            // Await any remaining tasks
+            if (batchTasks.Count > 0)
+            {
+                var completedBatches = await Task.WhenAll(batchTasks);
+                foreach (var batch in completedBatches)
+                {
+                    villages.AddRange(batch);
+                }
+            }
+
+            return villages;
+        }
+
+        private static List<RawVillage> ProcessBatch(List<string> lines)
+        {
+            var villages = new List<RawVillage>();
+            foreach (var line in lines)
+            {
+                var village = GetVillage(line);
+                if (village is not null)
+                {
+                    villages.Add(village);
+                }
+            }
             return villages;
         }
 
         private static RawVillage? GetVillage(string line)
         {
             if (string.IsNullOrEmpty(line)) return null;
-            var villageLine = line.Remove(0, 30);
-            villageLine = villageLine.Remove(villageLine.Length - 2, 2);
-            var fields = villageLine.ParseLine();
-            if (fields.Length != 16) return null;
-            var mapId = int.Parse(fields[0]);
-            var x = int.Parse(fields[1]);
-            var y = int.Parse(fields[2]);
-            var tribe = int.Parse(fields[3]);
-            var villageId = int.Parse(fields[4]);
-            var villageName = fields[5];
-            var playerId = int.Parse(fields[6]);
-            var playerName = fields[7];
-            var allianceId = int.Parse(fields[8]);
-            var allianceName = fields[9];
-            var population = int.Parse(fields[10]);
-            var region = fields[11];
-            var isCapital = fields[12].Equals("TRUE");
-            var isCity = fields[13].Equals("TRUE");
-            var isHarbor = fields[14].Equals("TRUE");
-            var victoryPoints = fields[15].Equals("NULL") ? 0 : int.Parse(fields[15]);
+
+            // Regex pattern to match the VALUES section of the SQL INSERT statement
+            var regex = MapSqlRegex();
+
+            var match = regex.Match(line);
+            if (!match.Success) return null;
+
+            // Extract fields from the regex match
+            var mapId = int.Parse(match.Groups["mapId"].Value);
+            var x = int.Parse(match.Groups["x"].Value);
+            var y = int.Parse(match.Groups["y"].Value);
+            var tribe = int.Parse(match.Groups["tribe"].Value);
+            var villageId = int.Parse(match.Groups["villageId"].Value);
+            var villageName = match.Groups["villageName"].Value;
+            var playerId = int.Parse(match.Groups["playerId"].Value);
+            var playerName = match.Groups["playerName"].Value;
+            var allianceId = int.Parse(match.Groups["allianceId"].Value);
+            var allianceName = match.Groups["allianceName"].Value;
+            var population = int.Parse(match.Groups["population"].Value);
+            var region = match.Groups["region"].Value == "NULL" ? string.Empty : match.Groups["region"].Value.Trim('\'');
+            var isCapital = match.Groups["isCapital"].Value.Equals("TRUE", StringComparison.OrdinalIgnoreCase);
+            var isCity = match.Groups["isCity"].Value.Equals("TRUE", StringComparison.OrdinalIgnoreCase);
+            var isHarbor = match.Groups["isHarbor"].Value.Equals("TRUE", StringComparison.OrdinalIgnoreCase);
+            var victoryPoints = match.Groups["victoryPoints"].Value == "NULL" ? 0 : int.Parse(match.Groups["victoryPoints"].Value);
+
             return new RawVillage(mapId, x, y, tribe, villageId, villageName, playerId, playerName, allianceId, allianceName, population, region, isCapital, isCity, isHarbor, victoryPoints);
         }
 
-        private static string Peek(this string source, int peek) => peek < 0 ? "" : source[..source.Claim(peek)];
-
-        private static int Claim(this string source, int position) => source.Length < position ? source.Length : position;
-
-        private static (string, string) Pop(this string source, int pop) => pop < 0 ? ("", source) : (source[..source.Claim(pop)], source.PopString(pop));
-
-        private static string PopString(this string source, int pop) => source.Length < pop ? "" : source[pop..];
-
-        public static string[] ParseLine(this string line)
-        {
-            return ParseLineImpl(line).ToArray();
-
-            static IEnumerable<string> ParseLineImpl(string l)
-            {
-                string remainder = l;
-                string field;
-                while (remainder.Peek(1) != "")
-                {
-                    (field, remainder) = ParseField(remainder);
-                    yield return field;
-                }
-            }
-        }
-
-        private const string GroupOpen = "'";
-        private const string GroupClose = "'";
-
-        private static (string field, string remainder) ParseField(string line)
-        {
-            if (line.Peek(1) == GroupOpen)
-            {
-                var (_, split) = line.Pop(1);
-                return ParseFieldQuoted(split);
-            }
-            else
-            {
-                var (head, tail) = line.Pop(1);
-                var sb = new StringBuilder();
-                while (head != "," && head != "")
-                {
-                    sb.Append(head);
-                    (head, tail) = tail.Pop(1);
-                }
-                return (sb.ToString(), tail);
-            }
-        }
-
-        private static (string field, string remainder) ParseFieldQuoted(string line) => ParseFieldQuoted(line, false);
-
-        private static (string field, string remainder) ParseFieldQuoted(string line, bool isNested)
-        {
-            var tail = line;
-
-            var sb = new StringBuilder();
-
-            while (tail.Peek(1) != "" && tail.Peek(1) != GroupClose)
-            {
-                if (tail.Peek(1) == GroupOpen)
-                {
-                    (_, tail) = tail.Pop(1);
-                    (var head, tail) = ParseFieldQuoted(tail, true);
-                    sb.Append(GroupOpen + head + GroupClose);
-                }
-                else
-                {
-                    (var head, tail) = tail.Pop(1);
-                    sb.Append(head);
-                }
-            }
-            if (tail.Peek(2) == GroupClose + ",")
-            {
-                (_, tail) = tail.Pop(isNested ? 1 : 2);
-            }
-            else if (tail.Peek(1) == GroupClose)
-            {
-                (_, tail) = tail.Pop(1);
-            }
-            return (sb.ToString(), tail);
-        }
+        [GeneratedRegex(@"VALUES\s*\((?<mapId>-?\d+),(?<x>-?\d+),(?<y>-?\d+),(?<tribe>\d+),(?<villageId>\d+),'(?<villageName>[^']*)',(?<playerId>\d+),'(?<playerName>[^']*)',(?<allianceId>\d+),'(?<allianceName>[^']*)',(?<population>\d+),(?<region>NULL|'[^']*'),(?<isCapital>TRUE|FALSE),(?<isCity>NULL|TRUE|FALSE),(?<isHarbor>NULL|TRUE|FALSE),(?<victoryPoints>NULL|-?\d+)\);", RegexOptions.IgnoreCase, "en-IO")]
+        private static partial Regex MapSqlRegex();
     }
 }
