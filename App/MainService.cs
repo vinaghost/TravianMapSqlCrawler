@@ -1,5 +1,4 @@
 ﻿using App.Commands;
-using App.Entities;
 using App.Models;
 using ConsoleTables;
 using CSharpDiscordWebhook;
@@ -8,9 +7,6 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using NetTopologySuite.GeometriesGraph;
-using System.Collections.Concurrent;
-using System.Data.SqlTypes;
 using System.Diagnostics;
 using System.Drawing;
 

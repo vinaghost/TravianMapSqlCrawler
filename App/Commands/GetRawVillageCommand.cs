@@ -1,7 +1,6 @@
 ﻿using App.Models;
 using Immediate.Handlers.Shared;
 using System.Diagnostics;
-using System.Text;
 using System.Text.RegularExpressions;
 
 namespace App.Commands
