@@ -12,6 +12,6 @@ RUN dotnet publish App/App.csproj -c Release -o /app/publish --no-restore
 
 FROM mcr.microsoft.com/dotnet/runtime-deps:8.0 AS final
 WORKDIR /app
-COPY --from=publish /app/publish .
+COPY --from=build /app/publish .
 RUN chmod +x App
 ENTRYPOINT ["./App"]
