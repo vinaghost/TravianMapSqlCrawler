@@ -90,7 +90,7 @@ namespace App
                     new EmbedBuilder
                     {
                         Title = "Run successfully",
-                        Description = $"Update at <t:{{new DateTimeOffset(DateTime.Now).ToUnixTimeSeconds()}}:f>",
+                        Description = $"Update at <t:{new DateTimeOffset(DateTime.Now).ToUnixTimeSeconds()}:f>",
                         Fields = [
                             new EmbedFieldBuilder()
                             {
