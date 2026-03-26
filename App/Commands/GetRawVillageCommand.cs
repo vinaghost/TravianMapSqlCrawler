@@ -1,77 +1,27 @@
 ﻿using App.Models;
 using Immediate.Handlers.Shared;
+using System.Diagnostics;
 using System.Text;
 using System.Text.RegularExpressions;
 
 namespace App.Commands
 {
     [Handler]
-    public static partial class GetVillageDataCommand
+    public static partial class GetRawVillageCommand
     {
         public sealed record Command(StreamReader StreamReader);
+        public sealed record Response(List<RawVillage> RawVillages, TimeSpan Runtime);
 
-        private static async ValueTask<List<RawVillage>> HandleAsync(
+        private static async ValueTask<Response> HandleAsync(
             Command command,
             CancellationToken cancellationToken)
         {
             var villages = new List<RawVillage>();
             var streamReader = command.StreamReader;
 
-            // Define batch sizes
-            const int batchSize = 500; // Number of lines per batch
-            const int maxConcurrentBatches = 10; // Number of batches to process concurrently
-
-            var lines = new List<string>(batchSize);
-            var batchTasks = new List<Task<List<RawVillage>>>(maxConcurrentBatches);
-
+            var sw = Stopwatch.StartNew();
             string? line;
             while ((line = await streamReader.ReadLineAsync(cancellationToken)) is not null)
-            {
-                if (line is null) continue;
-                lines.Add(line);
-                if (lines.Count >= batchSize)
-                {
-                    // Create a copy of the lines list and process the batch
-                    var batchCopy = new List<string>(lines);
-                    batchTasks.Add(Task.Run(() => ProcessBatch(batchCopy), cancellationToken));
-                    lines.Clear(); // Reset the lines list
-
-                    // If the maximum number of concurrent batches is reached, await them
-                    if (batchTasks.Count >= maxConcurrentBatches)
-                    {
-                        var completedBatches = await Task.WhenAll(batchTasks);
-                        foreach (var batch in completedBatches)
-                        {
-                            villages.AddRange(batch);
-                        }
-                        batchTasks.Clear(); // Clear the completed tasks
-                    }
-                }
-            }
-
-            // Process any remaining lines
-            if (lines.Count > 0)
-            {
-                batchTasks.Add(Task.Run(() => ProcessBatch(lines), cancellationToken));
-            }
-
-            // Await any remaining tasks
-            if (batchTasks.Count > 0)
-            {
-                var completedBatches = await Task.WhenAll(batchTasks);
-                foreach (var batch in completedBatches)
-                {
-                    villages.AddRange(batch);
-                }
-            }
-
-            return villages;
-        }
-
-        private static List<RawVillage> ProcessBatch(List<string> lines)
-        {
-            var villages = new List<RawVillage>();
-            foreach (var line in lines)
             {
                 var village = GetVillage(line);
                 if (village is not null)
@@ -79,7 +29,8 @@ namespace App.Commands
                     villages.Add(village);
                 }
             }
-            return villages;
+            sw.Stop();
+            return new(villages, sw.Elapsed);
         }
 
         private static RawVillage? GetVillage(string line)

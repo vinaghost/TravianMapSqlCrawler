@@ -1,4 +1,5 @@
 ﻿using Immediate.Handlers.Shared;
+using System.Diagnostics;
 
 namespace App.Commands
 {
@@ -7,17 +8,22 @@ namespace App.Commands
     {
         public sealed record Command(string Url);
 
+        public sealed record Response(StreamReader MapSqlStream, TimeSpan Runtime);
+
         public const string UrlMapSqlTemplate = "https://{0}/map.sql";
 
-        private static async ValueTask<StreamReader> HandleAsync(
+        private static async ValueTask<Response> HandleAsync(
             Command command,
             HttpClient httpClient,
             CancellationToken cancellationToken)
         {
             var url = string.Format(UrlMapSqlTemplate, command.Url);
-            var responseStream = await httpClient.GetStreamAsync(url, cancellationToken);
-            var streamReader = new StreamReader(responseStream);
-            return streamReader;
+
+            var sw = Stopwatch.StartNew();
+            var response = await httpClient.GetAsync(url, cancellationToken);
+            var streamReader = new StreamReader(response.Content.ReadAsStream(cancellationToken));
+            sw.Stop();
+            return new(streamReader, sw.Elapsed);
         }
     }
 }

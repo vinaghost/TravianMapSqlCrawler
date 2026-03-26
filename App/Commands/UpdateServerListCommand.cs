@@ -1,11 +1,16 @@
 ﻿using App.DbContexts;
 using App.Entities;
 using App.Models;
+using CSharpDiscordWebhook;
+using CSharpDiscordWebhook.Objects;
 using EFCore.BulkExtensions;
 using Immediate.Handlers.Shared;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using NetTopologySuite.GeometriesGraph;
+using System.Drawing;
 
 namespace App.Commands
 {
@@ -17,7 +22,8 @@ namespace App.Commands
         private static async ValueTask HandleAsync(
             Command command,
             IOptions<ConnectionStrings> connections,
-            ILogger<UpdateServerListCommand.Handler> logger,
+            IConfiguration configuration,
+            ILogger<Handler> logger,
             CancellationToken cancellationToken)
         {
             var servers = command.Servers;
@@ -63,6 +69,27 @@ namespace App.Commands
                 using var villageDbContext = new VillageDbContext(connections.Value.Village, timeoutServer.Url);
                 await villageDbContext.Database.EnsureDeletedAsync(cancellationToken);
             }
+
+            using var webhook = new DiscordWebhook(new Uri(configuration["DiscordWebhookUrl"]!));
+            await webhook.SendMessageAsync(new MessageBuilder
+            {
+                Embeds =
+                [
+                    new EmbedBuilder
+                    {
+                        Title = "Server list",
+                        Description = $"Deleted {timeoutServers.Count} servers",
+                        Fields = [
+                            new EmbedFieldBuilder()
+                            {
+                                Name = "Server url",
+                                Value = string.Join("\n", timeoutServers.Select(x => x.Url)),
+                                Inline = true
+                            }],
+                        Color = Color.Green
+                    }
+                ],
+            });
         }
     }
 }
