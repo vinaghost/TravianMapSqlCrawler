@@ -19,6 +19,7 @@ try
 }
 catch (Exception ex)
 {
+    Environment.ExitCode = 1;
     Log.Fatal(ex, "An unhandled exception occured during bootstrapping");
 }
 finally
