@@ -8,7 +8,7 @@ COPY App/packages.lock.json App/
 RUN dotnet restore App/App.csproj /p:RestorePackagesWithLockFile=true /p:PublishReadyToRun=true -a $TARGETARCH 
 
 COPY App/ App/
-RUN dotnet publish App/App.csproj /p:PublishReadyToRun=true -a $TARGETARCH --self-contained --no-restore -c Release -c Release -o /app
+RUN dotnet publish App/App.csproj /p:PublishReadyToRun=true -a $TARGETARCH --self-contained --no-restore -c Release -o /app
 
 FROM mcr.microsoft.com/dotnet/runtime-deps:8.0 AS final
 WORKDIR /app
