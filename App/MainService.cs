@@ -8,6 +8,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using NetTopologySuite.GeometriesGraph;
 using System.Collections.Concurrent;
 using System.Data.SqlTypes;
 using System.Diagnostics;
@@ -68,9 +69,18 @@ namespace App
                .Configure(o => o.NumberAlignment = Alignment.Right)
                .Write(Format.Minimal);
 
-            var table = ConsoleTable
-                .From(serverRecords.OrderByDescending(x => x.Server.PlayerCount).Select(r => new { r.Server.Url, r.Server.VillageCount, r.Server.PlayerCount, r.Server.AllianceCount, r.Runtime }))
-                .Configure(o => o.NumberAlignment = Alignment.Right);
+            var servers = serverRecords
+                .OrderByDescending(x => x.Server.PlayerCount)
+                .Select(x => x.Server.Url.Replace("travian.com", ""))
+                .ToList();
+            var players = serverRecords
+                .OrderByDescending(x => x.Server.PlayerCount)
+                .Select(x => $"{x.Server.PlayerCount.ToString("N0", System.Globalization.CultureInfo.InvariantCulture)}")
+                .ToList();
+            var villages = serverRecords
+                .OrderByDescending(x => x.Server.PlayerCount)
+                .Select(x => $"{x.Server.VillageCount.ToString("N0", System.Globalization.CultureInfo.InvariantCulture)}")
+                .ToList();
 
             using var webhook = new DiscordWebhook(new Uri(_configuration["DiscordWebhookUrl"]!));
             await webhook.SendMessageAsync(new MessageBuilder
@@ -80,7 +90,26 @@ namespace App
                     new EmbedBuilder
                     {
                         Title = "Run successfully",
-                        Description = $"Update at <t:{{new DateTimeOffset(DateTime.Now).ToUnixTimeSeconds()}}:f> \n{table.ToMinimalString()}",
+                        Description = $"Update at <t:{{new DateTimeOffset(DateTime.Now).ToUnixTimeSeconds()}}:f>",
+                        Fields = [
+                            new EmbedFieldBuilder()
+                            {
+                                Name = "Server",
+                                Value = string.Join("\n", servers),
+                                Inline = true,
+                            },
+                            new EmbedFieldBuilder()
+                            {
+                                Name = "Player count",
+                                Value = string.Join("\n", players),
+                                Inline = true
+                            },
+                            new EmbedFieldBuilder()
+                            {
+                                Name = "Village count",
+                                Value = string.Join("\n", villages),
+                                Inline = true
+                            }],
                         Color = Color.Green
                     }
                 ],
