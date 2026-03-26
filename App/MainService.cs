@@ -71,7 +71,7 @@ namespace App
 
             var servers = serverRecords
                 .OrderByDescending(x => x.Server.PlayerCount)
-                .Select(x => x.Server.Url.Replace("travian.com", ""))
+                .Select(x => x.Server.Url.Replace(".travian.com", ""))
                 .ToList();
             var players = serverRecords
                 .OrderByDescending(x => x.Server.PlayerCount)
