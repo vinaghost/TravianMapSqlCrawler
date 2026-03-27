@@ -1,4 +1,8 @@
 <Solution>
+  <Folder Name="/Solution Items/">
+    <File Path=".editorconfig" />
+  </Folder>
   <Project Path="App/App.csproj" Id="97fd6552-61bf-43ad-b235-0015401f4d5b" />
+  <Project Path="ServerScanner/ServerScanner.csproj" Id="ca737b14-43b4-4446-9a97-9ded65deb24a" />
   <Project Path="TestProject/TestProject.csproj" Id="d1c43998-9757-4882-a975-6633fdaefc6f" />
 </Solution>
