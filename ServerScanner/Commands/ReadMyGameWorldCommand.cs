@@ -1,7 +1,11 @@
 ﻿using ConsoleTables;
 using Immediate.Handlers.Shared;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Microsoft.Playwright;
+using ServerScanner.Configuration;
+using ServerScanner.Entities;
 using ServerScanner.Models;
 using System;
 using System.Collections.Generic;
@@ -12,38 +16,30 @@ namespace ServerScanner.Commands
     [Handler]
     public static partial class ReadMyGameWorldCommand
     {
-        public sealed record Command(IPage Page);
+        public sealed record Command(IPage Page, IList<string> ServersInDb);
 
-        private static async ValueTask HandleAsync(
+        private static async ValueTask<List<Server>> HandleAsync(
             Command command,
             ILogger<Handler> logger,
             CancellationToken cancellationToken)
         {
-            var page = command.Page;
-
-            // List to store Server instances
+            cancellationToken.ThrowIfCancellationRequested();
+            var (page, serversInDb) = command;
             var servers = new List<Server>();
 
-            // Find all divs with class "gameworld"
             var gameWorldDivs = await page.QuerySelectorAllAsync("div.gameworld");
 
             for (int i = 0; i < gameWorldDivs.Count; i++)
             {
-                // Re-fetch the gameWorldDivs to ensure the DOM is up-to-date
-                gameWorldDivs = await page.QuerySelectorAllAsync("div.gameworld");
+                if (i != 0)
+                {
+                    gameWorldDivs = await page.QuerySelectorAllAsync("div.gameworld");
+                }
+
                 var gameWorldDiv = gameWorldDivs[i];
-
-                // Extract the "data-wuid" attribute for the world ID
-                var worldId = await gameWorldDiv.GetAttributeAsync("data-wuid");
-
-                // Find the child div with class "gameworldName" and extract its text for the world name
-                var gameWorldNameDiv = await gameWorldDiv.QuerySelectorAsync("div.gameworldName");
-                var worldName = gameWorldNameDiv != null ? await gameWorldNameDiv.InnerTextAsync() : null;
-
-                // Log the extracted information
+                (string? worldId, string worldName) = await GetWorldInfo(gameWorldDiv);
                 logger.LogInformation("Found game world: ID = {WorldId}, Name = {WorldName}", worldId, worldName);
 
-                // Find the button with class "playNow" and click it
                 var playNowButton = await gameWorldDiv.QuerySelectorAsync("button.playNow");
                 if (playNowButton != null)
                 {
@@ -71,6 +67,16 @@ namespace ServerScanner.Commands
             // Log the collected servers
             logger.LogInformation("Collected {Count} servers.", servers.Count);
             ConsoleTable.From(servers).Write(Format.Alternative);
+            return [.. servers.Where(x => !string.IsNullOrEmpty(x.Name))];
+        }
+
+        private static async Task<(string? worldId, string worldName)> GetWorldInfo(IElementHandle gameWorldDiv)
+        {
+            var worldId = await gameWorldDiv.GetAttributeAsync("data-wuid");
+
+            var gameWorldNameDiv = await gameWorldDiv.QuerySelectorAsync("div.gameworldName");
+            var worldName = gameWorldNameDiv != null ? await gameWorldNameDiv.InnerTextAsync() : "";
+            return (worldId, worldName);
         }
     }
 }

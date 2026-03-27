@@ -2,3 +2,6 @@
 
 # MA0004: Use Task.ConfigureAwait
 dotnet_diagnostic.MA0004.severity = silent
+
+# CA1873: Avoid potentially expensive logging
+dotnet_diagnostic.CA1873.severity = silent

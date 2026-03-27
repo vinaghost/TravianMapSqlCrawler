@@ -11,9 +11,11 @@ namespace ServerScanner
         public static IHostBuilder ConfigureCoreServices(this IHostBuilder hostBuilder) =>
             hostBuilder.ConfigureServices((hostBuilderContext, services) =>
             {
-                services.Configure<LoginCredentials>(hostBuilderContext.Configuration.GetSection(nameof(LoginCredentials)));
                 services.AddSerilog(c => c
                     .ReadFrom.Configuration(hostBuilderContext.Configuration));
+
+                services.Configure<LoginCredentials>(hostBuilderContext.Configuration.GetSection(nameof(LoginCredentials)));
+                services.Configure<ConnectionStrings>(hostBuilderContext.Configuration.GetSection(nameof(ConnectionStrings)));
             });
 
         public static IHostBuilder ConfigureServices(this IHostBuilder hostBuilder) =>

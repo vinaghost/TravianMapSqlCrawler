@@ -13,7 +13,6 @@ namespace ServerScanner
         public async Task StartAsync(CancellationToken cancellationToken)
         {
             using var scope = serviceScopeFactory.CreateScope();
-            logger.LogInformation("Starting server scanner...");
             using var playwright = await Playwright.CreateAsync();
             await using var browser = await playwright.Firefox.LaunchAsync();
             var context = await browser.NewContextAsync();
@@ -23,17 +22,20 @@ namespace ServerScanner
             await loginCommand.HandleAsync(new(page), cancellationToken);
             await Task.Delay(5000);
 
+            var getServerCommand = scope.ServiceProvider.GetRequiredService<GetServerCommand.Handler>();
+            var servers = await getServerCommand.HandleAsync(new(), cancellationToken);
+
             var readMyGameWorldCommand = scope.ServiceProvider.GetRequiredService<ReadMyGameWorldCommand.Handler>();
-            await readMyGameWorldCommand.HandleAsync(new(page), cancellationToken);
+            var myServers = await readMyGameWorldCommand.HandleAsync(new(page, servers), cancellationToken);
 
             var expandGameWorldCommand = scope.ServiceProvider.GetRequiredService<ExpandGameWorldCommand.Handler>();
             await expandGameWorldCommand.HandleAsync(new(page), cancellationToken);
-            await Task.Delay(5000);
-
-            await page.ScreenshotAsync(new() { Path = "screenshot.png", FullPage = true });
 
             var readYourGameWorldCommand = scope.ServiceProvider.GetRequiredService<ReadYourGameWorldCommand.Handler>();
-            await readYourGameWorldCommand.HandleAsync(new(page), cancellationToken);
+            var yourServers = await readYourGameWorldCommand.HandleAsync(new(page, servers), cancellationToken);
+
+            var updateServerCommand = scope.ServiceProvider.GetRequiredService<UpdateServerCommand.Handler>();
+            await updateServerCommand.HandleAsync(new([.. yourServers, .. myServers]), cancellationToken);
 
             await Task.CompletedTask;
             hostApplicationLifetime.StopApplication();

@@ -1,8 +1,12 @@
 ﻿using ConsoleTables;
 using Immediate.Handlers.Shared;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Microsoft.Playwright;
 using Serilog.Core;
+using ServerScanner.Configuration;
+using ServerScanner.Entities;
 using ServerScanner.Models;
 using System;
 using System.Collections.Generic;
@@ -13,46 +17,41 @@ namespace ServerScanner.Commands
     [Handler]
     public static partial class ReadYourGameWorldCommand
     {
-        public sealed record Command(IPage Page);
+        public sealed record Command(IPage Page, IList<string> ServersInDb);
 
-        private static async ValueTask HandleAsync(
+        private static async ValueTask<List<Server>> HandleAsync(
             Command command,
             ILogger<Handler> logger,
             CancellationToken cancellationToken)
         {
-            var page = command.Page;
+            cancellationToken.ThrowIfCancellationRequested();
 
-            // List to store Server instances
+            var (page, serversInDb) = command;
             var servers = new List<Server>();
 
             await LoadAllRegion(page, logger);
-            // Find all divs with class "gameworld"
             var gameWorldDivs = await page.QuerySelectorAllAsync("div.gameworld");
 
             for (int i = 0; i < gameWorldDivs.Count; i++)
             {
-                // Re-fetch the gameWorldDivs to ensure the DOM is up-to-date
-                await LoadAllRegion(page, logger);
-                gameWorldDivs = await page.QuerySelectorAllAsync("div.gameworld");
+                if (i != 0)
+                {
+                    await LoadAllRegion(page, logger);
+                    gameWorldDivs = await page.QuerySelectorAllAsync("div.gameworld");
+                }
                 var gameWorldDiv = gameWorldDivs[i];
-
-                // Extract the "data-wuid" attribute for the world ID
-                var worldId = await gameWorldDiv.GetAttributeAsync("data-wuid");
-
-                // Find the child div with class "gameworldName" and extract its text for the world name
-                var gameWorldNameDiv = await gameWorldDiv.QuerySelectorAsync("div.gameworldName");
-                var worldName = gameWorldNameDiv != null ? await gameWorldNameDiv.InnerTextAsync() : null;
-
-                // Log the extracted information
+                (string? worldId, string worldName) = await GetWorldInfo(gameWorldDiv);
                 logger.LogInformation("Found game world: ID = {WorldId}, Name = {WorldName}", worldId, worldName);
 
-                // Click on the gameWorldDiv to open the dialog
-                await gameWorldDiv.ClickAsync();
+                if (string.IsNullOrEmpty(worldId) || serversInDb.Contains(worldId, StringComparer.OrdinalIgnoreCase))
+                {
+                    logger.LogInformation("Skipping game world with ID = {WorldId} as it is already in the database.", worldId);
+                    continue;
+                }
 
-                // Wait for the dialog to appear
+                await gameWorldDiv.ClickAsync();
                 await page.WaitForSelectorAsync("#gameworldDetails > section.action > form > button", new PageWaitForSelectorOptions { State = WaitForSelectorState.Visible });
 
-                // Click the button inside the dialog
                 var dialogButton = await page.QuerySelectorAsync("#gameworldDetails > section.action > form > button");
                 if (dialogButton != null)
                 {
@@ -60,7 +59,6 @@ namespace ServerScanner.Commands
                     await dialogButton.ClickAsync();
                     try
                     {
-                        // Wait for the URL to change
                         await page.WaitForURLAsync(url => !string.Equals(url, oldUrl, StringComparison.OrdinalIgnoreCase));
                     }
                     catch
@@ -71,13 +69,9 @@ namespace ServerScanner.Commands
 
                     var currentUrl = page.Url;
                     logger.LogInformation("Navigated to URL: {Url}", currentUrl);
-
-                    // Create a Server instance and add it to the list
-                    var server = new Server(worldId ?? "", worldName ?? "", currentUrl);
-                    servers.Add(server);
-
-                    // Navigate back to the server menu
                     await page.GoBackAsync();
+                    var server = new Server(worldId, worldName, currentUrl);
+                    servers.Add(server);
                 }
                 else
                 {
@@ -85,9 +79,18 @@ namespace ServerScanner.Commands
                 }
             }
 
-            // Log the collected servers
             logger.LogInformation("Collected {Count} servers.", servers.Count);
             ConsoleTable.From(servers).Write(Format.Alternative);
+            return [.. servers.Where(x => !string.IsNullOrEmpty(x.Name))];
+        }
+
+        private static async Task<(string? worldId, string worldName)> GetWorldInfo(IElementHandle gameWorldDiv)
+        {
+            var worldId = await gameWorldDiv.GetAttributeAsync("data-wuid");
+
+            var gameWorldNameDiv = await gameWorldDiv.QuerySelectorAsync("div.gameworldName");
+            var worldName = gameWorldNameDiv != null ? await gameWorldNameDiv.InnerTextAsync() : "";
+            return (worldId, worldName);
         }
 
         private static async ValueTask LoadAllRegion(IPage page, ILogger logger)
