@@ -1,11 +1,7 @@
 ﻿using Immediate.Handlers.Shared;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using ServerScanner.Configuration;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace ServerScanner.Commands
 {

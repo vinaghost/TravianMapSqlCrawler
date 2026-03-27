@@ -1,11 +1,6 @@
 ﻿using Immediate.Handlers.Shared;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 using Microsoft.Playwright;
-using ServerScanner.Configuration;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace ServerScanner.Commands
 {

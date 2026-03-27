@@ -1,7 +1,7 @@
 ﻿using Immediate.Handlers.Shared;
 using Microsoft.Extensions.Logging;
-using Microsoft.Playwright;
 using Microsoft.Extensions.Options;
+using Microsoft.Playwright;
 using ServerScanner.Configuration;
 
 namespace ServerScanner.Commands

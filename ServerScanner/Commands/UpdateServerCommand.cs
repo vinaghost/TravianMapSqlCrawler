@@ -6,10 +6,7 @@ using Microsoft.Extensions.Options;
 using ServerScanner.Configuration;
 using ServerScanner.Entities;
 using ServerScanner.Models;
-using System;
-using System.Collections.Generic;
 using System.Drawing;
-using System.Text;
 
 namespace ServerScanner.Commands
 {
@@ -25,6 +22,7 @@ namespace ServerScanner.Commands
             CancellationToken cancellationToken)
         {
             var servers = command.Servers;
+            if (servers.Count == 0) return;
             var connectionStrings = connectionStringsOptions.Value.Server;
             await using var context = new ServerDbContext(connectionStrings);
             await context.AddRangeAsync(servers.Select(x => new LobbyServer()
@@ -34,6 +32,7 @@ namespace ServerScanner.Commands
                 UpdateAt = DateTime.UtcNow,
                 Url = x.Url,
             }), cancellationToken);
+            await context.SaveChangesAsync(cancellationToken);
 
             var urls = servers
                 .OrderBy(x => x.Name, StringComparer.OrdinalIgnoreCase)
@@ -55,8 +54,9 @@ namespace ServerScanner.Commands
                                 Name = "Server",
                                 Value = string.Join("\n", urls),
                                 Inline = true,
-                            }
-                        Color = Color.Green
+                            },
+                        ],
+                        Color = Color.Green,
                     }
                 ],
             });

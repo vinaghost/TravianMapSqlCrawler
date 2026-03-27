@@ -7,8 +7,7 @@ using ServerScanner.Commands;
 namespace ServerScanner
 {
     public class MainService(IHostApplicationLifetime hostApplicationLifetime,
-                             IServiceScopeFactory serviceScopeFactory,
-                             ILogger<MainService> logger) : IHostedService
+                             IServiceScopeFactory serviceScopeFactory) : IHostedService
     {
         public async Task StartAsync(CancellationToken cancellationToken)
         {
@@ -20,7 +19,6 @@ namespace ServerScanner
 
             var loginCommand = scope.ServiceProvider.GetRequiredService<LoginCommand.Handler>();
             await loginCommand.HandleAsync(new(page), cancellationToken);
-            await Task.Delay(5000);
 
             var getServerCommand = scope.ServiceProvider.GetRequiredService<GetServerCommand.Handler>();
             var servers = await getServerCommand.HandleAsync(new(), cancellationToken);
@@ -37,7 +35,9 @@ namespace ServerScanner
             var updateServerCommand = scope.ServiceProvider.GetRequiredService<UpdateServerCommand.Handler>();
             await updateServerCommand.HandleAsync(new([.. yourServers, .. myServers]), cancellationToken);
 
-            await Task.CompletedTask;
+            var updateShishnetCommand = scope.ServiceProvider.GetRequiredService<UpdateShishnetCommand.Handler>();
+            await updateShishnetCommand.HandleAsync(new(), cancellationToken);
+
             hostApplicationLifetime.StopApplication();
         }
 

@@ -1,15 +1,8 @@
 ﻿using ConsoleTables;
 using Immediate.Handlers.Shared;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 using Microsoft.Playwright;
-using ServerScanner.Configuration;
-using ServerScanner.Entities;
 using ServerScanner.Models;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace ServerScanner.Commands
 {
@@ -39,6 +32,12 @@ namespace ServerScanner.Commands
                 var gameWorldDiv = gameWorldDivs[i];
                 (string? worldId, string worldName) = await GetWorldInfo(gameWorldDiv);
                 logger.LogInformation("Found game world: ID = {WorldId}, Name = {WorldName}", worldId, worldName);
+
+                if (string.IsNullOrEmpty(worldId) || serversInDb.Contains(worldId, StringComparer.OrdinalIgnoreCase))
+                {
+                    logger.LogInformation("Skipping game world with ID = {WorldId} as it is already in the database.", worldId);
+                    continue;
+                }
 
                 var playNowButton = await gameWorldDiv.QuerySelectorAsync("button.playNow");
                 if (playNowButton != null)

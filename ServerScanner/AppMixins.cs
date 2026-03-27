@@ -1,5 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Serilog;
 using ServerScanner.Configuration;
@@ -13,7 +12,7 @@ namespace ServerScanner
             {
                 services.AddSerilog(c => c
                     .ReadFrom.Configuration(hostBuilderContext.Configuration));
-
+                services.AddHttpClient();
                 services.Configure<LoginCredentials>(hostBuilderContext.Configuration.GetSection(nameof(LoginCredentials)));
                 services.Configure<ConnectionStrings>(hostBuilderContext.Configuration.GetSection(nameof(ConnectionStrings)));
             });

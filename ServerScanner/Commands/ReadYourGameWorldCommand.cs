@@ -1,16 +1,8 @@
 ﻿using ConsoleTables;
 using Immediate.Handlers.Shared;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 using Microsoft.Playwright;
-using Serilog.Core;
-using ServerScanner.Configuration;
-using ServerScanner.Entities;
 using ServerScanner.Models;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace ServerScanner.Commands
 {
