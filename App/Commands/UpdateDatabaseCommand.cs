@@ -46,17 +46,16 @@ namespace App.Commands
                 var transaction = await context.Database.BeginTransactionAsync(cancellationToken);
                 try
                 {
-                    if (!villageHistoryLogged)
+                    if (!allianceHistoryLogged)
                     {
-                        await context.BulkInsertAsync(newVillages, cancellationToken: cancellationToken);
-                        await context.BulkUpdateAsync(oldVillages, cancellationToken: cancellationToken);
-                        await context.BulkInsertAsync(historyRecords, cancellationToken: cancellationToken);
-
-                        await context.Villages
-                            .Where(x => deletedVillages.Contains(x.Id))
+                        await context.BulkInsertAsync(newAlliances, cancellationToken: cancellationToken);
+                        await context.BulkUpdateAsync(oldAlliances, cancellationToken: cancellationToken);
+                        await context.BulkInsertAsync(allianceHistoryRecords, cancellationToken: cancellationToken);
+                        await context.Alliances
+                            .Where(x => deletedAlliances.Contains(x.Id))
                             .ExecuteUpdateAsync(x =>
-                                x.SetProperty(v => v.Population, 0),
-                                cancellationToken);
+                                x.SetProperty(a => a.PlayerCount, 0),
+                            cancellationToken);
                     }
 
                     if (!playerHistoryLogged)
@@ -73,16 +72,17 @@ namespace App.Commands
                             cancellationToken);
                     }
 
-                    if (!allianceHistoryLogged)
+                    if (!villageHistoryLogged)
                     {
-                        await context.BulkInsertAsync(newAlliances, cancellationToken: cancellationToken);
-                        await context.BulkUpdateAsync(oldAlliances, cancellationToken: cancellationToken);
-                        await context.BulkInsertAsync(allianceHistoryRecords, cancellationToken: cancellationToken);
-                        await context.Alliances
-                            .Where(x => deletedAlliances.Contains(x.Id))
+                        await context.BulkInsertAsync(newVillages, cancellationToken: cancellationToken);
+                        await context.BulkUpdateAsync(oldVillages, cancellationToken: cancellationToken);
+                        await context.BulkInsertAsync(historyRecords, cancellationToken: cancellationToken);
+
+                        await context.Villages
+                            .Where(x => deletedVillages.Contains(x.Id))
                             .ExecuteUpdateAsync(x =>
-                                x.SetProperty(a => a.PlayerCount, 0),
-                            cancellationToken);
+                                x.SetProperty(v => v.Population, 0),
+                                cancellationToken);
                     }
 
                     await transaction.CommitAsync(cancellationToken);
