@@ -38,9 +38,9 @@
       },
       "Immediate.Handlers": {
         "type": "Direct",
-        "requested": "[3.3.0, )",
-        "resolved": "3.3.0",
-        "contentHash": "RX3QY+NJaNzoN0j/kSdCJEnCmt7P3Z+dqceHRAVcvy8RFI2U9cLGSQwj+HF/DuAqcaLbuDVE1ojJoVR4n3Dm1g=="
+        "requested": "[3.4.0, )",
+        "resolved": "3.4.0",
+        "contentHash": "0ufw1Fu66I35Y+u/JpLJKOoyJgy74TKTtGQn/rx6zfV1mcZpPLXwIcfSWED14UulLJxSz8hmVg3cSg7cXhriiA=="
       },
       "Microsoft.Extensions.Hosting": {
         "type": "Direct",
