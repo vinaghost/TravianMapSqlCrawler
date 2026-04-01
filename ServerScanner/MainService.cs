@@ -17,6 +17,8 @@ namespace ServerScanner
             var context = await browser.NewContextAsync();
             var page = await context.NewPageAsync();
 
+            await page.SetViewportSizeAsync(1920, 1080);
+            
             var loginCommand = scope.ServiceProvider.GetRequiredService<LoginCommand.Handler>();
             await loginCommand.HandleAsync(new(page), cancellationToken);
 
