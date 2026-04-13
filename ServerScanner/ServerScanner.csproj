@@ -14,7 +14,7 @@
     <PackageReference Include="ConsoleTables" Version="2.7.0" />
     <PackageReference Include="EFCore.BulkExtensions.MySql" Version="9.0.2" />
     <PackageReference Include="Immediate.Handlers" Version="3.4.0" />
-    <PackageReference Include="Meziantou.Analyzer" Version="3.0.29">
+    <PackageReference Include="Meziantou.Analyzer" Version="3.0.47">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
