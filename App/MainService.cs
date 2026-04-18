@@ -79,37 +79,52 @@ namespace App
                 .Select(x => $"{x.Server.VillageCount.ToString("N0", System.Globalization.CultureInfo.InvariantCulture)}")
                 .ToList();
 
-            using var webhook = new DiscordWebhook(new Uri(_configuration["DiscordWebhookUrl"]!));
-            await webhook.SendMessageAsync(new MessageBuilder
-            {
-                Embeds =
-                [
+            var serversGroupedByRegion = serverRecords
+                .OrderByDescending(x => x.Server.PlayerCount)
+                .GroupBy(x => x.Server.Url.Split('.').TakeLast(3).First()) // Group by region (last part of the URL)
+                .ToDictionary(
+                    group => group.Key,
+                    group => group.Select(x => new
+                    {
+                        Server = x.Server.Url.Replace(".travian.com", ""),
+                        PlayerCount = x.Server.PlayerCount.ToString("N0", System.Globalization.CultureInfo.InvariantCulture),
+                        VillageCount = x.Server.VillageCount.ToString("N0", System.Globalization.CultureInfo.InvariantCulture)
+                    }).ToList()
+                );
+
+            var embedBuilders = serversGroupedByRegion
+                .Select(regionGroup =>
                     new EmbedBuilder
                     {
-                        Title = "Run successfully",
-                        Description = $"{servers.Count} servers updated at <t:{new DateTimeOffset(DateTime.Now).ToUnixTimeSeconds()}:f>",
+                        Color = Color.Green,
+                        Description = regionGroup.Value.Count == 0 ? "No servers found." : $"Region {regionGroup.Key} has {regionGroup.Value.Count} servers.",
                         Fields = [
                             new EmbedFieldBuilder()
                             {
                                 Name = "Server",
-                                Value = string.Join("\n", servers),
+                                Value = string.Join("\n", regionGroup.Value.Select(x => x.Server)),
                                 Inline = true,
                             },
                             new EmbedFieldBuilder()
                             {
                                 Name = "Player count",
-                                Value = string.Join("\n", players),
+                                Value = string.Join("\n", regionGroup.Value.Select(x => x.PlayerCount)),
                                 Inline = true
                             },
                             new EmbedFieldBuilder()
                             {
                                 Name = "Village count",
-                                Value = string.Join("\n", villages),
+                                Value = string.Join("\n", regionGroup.Value.Select(x => x.VillageCount)),
                                 Inline = true
                             }],
-                        Color = Color.Green
-                    }
-                ],
+                    })
+                .ToList();
+
+            using var webhook = new DiscordWebhook(new Uri(_configuration["DiscordWebhookUrl"]!));
+            await webhook.SendMessageAsync(new MessageBuilder
+            {
+                Content = $"{servers.Count} servers updated at <t:{new DateTimeOffset(DateTime.Now).ToUnixTimeSeconds()}:f>",
+                Embeds = embedBuilders,
             });
 
             var updateServerListCommand = scope.ServiceProvider.GetRequiredService<UpdateServerListCommand.Handler>();
