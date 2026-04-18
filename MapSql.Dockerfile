@@ -1,4 +1,4 @@
-FROM --platform=$BUILDPLATFORM mcr.microsoft.com/dotnet/sdk:8.0 AS build
+FROM --platform=$BUILDPLATFORM mcr.microsoft.com/dotnet/sdk:10.0 AS build
 ARG TARGETARCH
 WORKDIR /source
 
@@ -10,7 +10,7 @@ RUN dotnet restore App/App.csproj /p:RestorePackagesWithLockFile=true /p:Publish
 COPY App/ App/
 RUN dotnet publish App/App.csproj /p:PublishReadyToRun=true -a $TARGETARCH --self-contained --no-restore -c Release -o /app
 
-FROM mcr.microsoft.com/dotnet/runtime-deps:8.0 AS final
+FROM mcr.microsoft.com/dotnet/runtime-deps:10.0 AS final
 WORKDIR /app
 COPY --from=build /app .
 RUN chmod +x App
