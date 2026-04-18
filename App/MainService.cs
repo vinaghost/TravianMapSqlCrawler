@@ -89,7 +89,9 @@ namespace App
                         Server = x.Server.Url.Replace(".travian.com", ""),
                         PlayerCount = x.Server.PlayerCount.ToString("N0", System.Globalization.CultureInfo.InvariantCulture),
                         VillageCount = x.Server.VillageCount.ToString("N0", System.Globalization.CultureInfo.InvariantCulture)
-                    }).ToList()
+                    })
+                    .OrderByDescending(x => x.PlayerCount)
+                    .ToList()
                 );
 
             var embedBuilders = serversGroupedByRegion
