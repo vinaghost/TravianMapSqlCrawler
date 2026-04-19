@@ -18,7 +18,7 @@ namespace App.Commands
             var response = await httpClient.GetAsync(Url);
             response.EnsureSuccessStatusCode();
             var html = new HtmlDocument();
-            html.Load(response.Content.ReadAsStream());
+            html.Load(response.Content.ReadAsStream(cancellationToken));
 
             var table = html.DocumentNode
                 .Descendants("table")

@@ -136,7 +136,7 @@ namespace App
 
         private async Task<UpdateDatabaseCommand.Response[]> GetServerRecords((string ServerUrl, List<RawVillage> RawVillages, TimeSpan FetchingRuntime, TimeSpan ParsingRuntime)[] rawVillageRecords, UpdateDatabaseCommand.Handler updateDatabaseCommand, CancellationToken cancellationToken)
         {
-            using var semaphore = new SemaphoreSlim(5);
+            using var semaphore = new SemaphoreSlim(3);
             var tasks = rawVillageRecords.Select(record => Task.Run(async () =>
             {
                 await semaphore.WaitAsync(cancellationToken);

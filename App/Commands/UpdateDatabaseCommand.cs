@@ -86,10 +86,11 @@ namespace App.Commands
                     }
 
                     await transaction.CommitAsync(cancellationToken);
+                    logger.LogInformation("Server {ServerUrl}'s database updated successfully.", url);
                 }
                 catch (Exception e)
                 {
-                    logger.LogError(e, "{Message}", e.Message);
+                    logger.LogError(e, "An error occurred while updating server {ServerUrl}'s database. Transaction rolled back. Error: {Message}", url, e.Message);
                     await transaction.RollbackAsync(cancellationToken);
                     return new Response(new Server()
                     {
