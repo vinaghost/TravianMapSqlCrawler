@@ -137,19 +137,22 @@ namespace App
         private async Task<UpdateDatabaseCommand.Response[]> GetServerRecords((string ServerUrl, List<RawVillage> RawVillages, TimeSpan FetchingRuntime, TimeSpan ParsingRuntime)[] rawVillageRecords, UpdateDatabaseCommand.Handler updateDatabaseCommand, CancellationToken cancellationToken)
         {
             using var semaphore = new SemaphoreSlim(3);
-            var tasks = rawVillageRecords.Select(record => Task.Run(async () =>
-            {
-                await semaphore.WaitAsync(cancellationToken);
-                try
+            var tasks = rawVillageRecords
+                .Where(x => x.RawVillages.Count > 0)
+                .Select(record => Task.Run(async () =>
                 {
-                    var serverRecord = await updateDatabaseCommand.HandleAsync(new(record.ServerUrl, record.RawVillages), cancellationToken);
-                    return serverRecord;
-                }
-                finally
-                {
-                    semaphore.Release();
-                }
-            }, cancellationToken)).ToArray();
+                    await semaphore.WaitAsync(cancellationToken);
+                    try
+                    {
+                        var serverRecord = await updateDatabaseCommand.HandleAsync(new(record.ServerUrl, record.RawVillages), cancellationToken);
+                        return serverRecord;
+                    }
+                    finally
+                    {
+                        semaphore.Release();
+                    }
+                }, cancellationToken))
+                .ToArray();
             var sw = Stopwatch.StartNew();
             var records = await Task.WhenAll(tasks);
             sw.Stop();
@@ -166,6 +169,11 @@ namespace App
                 try
                 {
                     var mapSqlResponse = await getMapSqlCommand.HandleAsync(new(serverUrl), cancellationToken);
+                    if (mapSqlResponse.MapSqlStream is null)
+                    {
+                        _logger.LogWarning("Map SQL not found for server {Url}", serverUrl);
+                        return (serverUrl, [], mapSqlResponse.Runtime, TimeSpan.Zero);
+                    }
                     var rawVillageResponse = await getRawVillageCommand.HandleAsync(new(mapSqlResponse.MapSqlStream), cancellationToken);
                     return (serverUrl, rawVillageResponse.RawVillages, mapSqlResponse.Runtime, rawVillageResponse.Runtime);
                 }
