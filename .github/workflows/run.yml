@@ -1,6 +1,3 @@
-# secrets required:
-# SETTINGS_FILE
-# PAT
 name: Run Docker build of Village Crawler
 on:
   workflow_dispatch:
@@ -15,6 +12,7 @@ jobs:
     permissions:
       contents: read
       packages: read
+    environment: lobbyserver
     steps:
       - name: Login to Docker Hub
         uses: docker/login-action@v4
@@ -22,9 +20,9 @@ jobs:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
-      - name: Download setting file
+      - name: Write setting file from environment variable
         run: |
-          curl -s -H "Authorization: token ${{ secrets.PAT }} " ${{ secrets.SETTINGS_FILE }}/appsettings.Production.lobbyserver.json -H "Accept: application/vnd.github.raw" > appsettings.Production.json
+          echo "${{ secrets.SETTINGS_FILE }}" | base64 -d > appsettings.Production.json     
       - name: Run Docker container
         run: |
            docker run \
@@ -36,6 +34,7 @@ jobs:
       contents: read
       packages: read
     needs: scan-server
+    environment: mapsql
     steps:
       - name: Login to Docker Hub
         uses: docker/login-action@v4
@@ -43,9 +42,9 @@ jobs:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
-      - name: Download setting file
+      - name: Write setting file from environment variable
         run: |
-          curl -s -H "Authorization: token ${{ secrets.PAT }} " ${{ secrets.SETTINGS_FILE }}/appsettings.Production.mapsql.json -H "Accept: application/vnd.github.raw" > appsettings.Production.json
+          echo "${{ secrets.SETTINGS_FILE }}" | base64 -d > appsettings.Production.json
       - name: Run Docker container
         run: |
            docker run \
