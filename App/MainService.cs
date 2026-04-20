@@ -66,19 +66,6 @@ namespace App
                .Configure(o => o.NumberAlignment = Alignment.Right)
                .Write(Format.Minimal);
 
-            var servers = serverRecords
-                .OrderByDescending(x => x.Server.PlayerCount)
-                .Select(x => x.Server.Url.Replace(".travian.com", ""))
-                .ToList();
-            var players = serverRecords
-                .OrderByDescending(x => x.Server.PlayerCount)
-                .Select(x => $"{x.Server.PlayerCount.ToString("N0", System.Globalization.CultureInfo.InvariantCulture)}")
-                .ToList();
-            var villages = serverRecords
-                .OrderByDescending(x => x.Server.PlayerCount)
-                .Select(x => $"{x.Server.VillageCount.ToString("N0", System.Globalization.CultureInfo.InvariantCulture)}")
-                .ToList();
-
             var serversGroupedByRegion = serverRecords
                 .OrderByDescending(x => x.Server.PlayerCount)
                 .GroupBy(x => x.Server.Url.Split('.').TakeLast(3).First()) // Group by region (last part of the URL)
@@ -95,6 +82,8 @@ namespace App
                 );
 
             var embedBuilders = serversGroupedByRegion
+                .OrderByDescending(x => x.Value.Count)
+                .ThenByDescending(x => x.Value.FirstOrDefault()?.PlayerCount)
                 .Select(regionGroup =>
                     new EmbedBuilder
                     {
@@ -125,7 +114,7 @@ namespace App
             using var webhook = new DiscordWebhook(new Uri(_configuration["DiscordWebhookUrl"]!));
             await webhook.SendMessageAsync(new MessageBuilder
             {
-                Content = $"{servers.Count} servers updated at <t:{new DateTimeOffset(DateTime.Now).ToUnixTimeSeconds()}:f>",
+                Content = $"{serverRecords.Length} servers updated at <t:{new DateTimeOffset(DateTime.Now).ToUnixTimeSeconds()}:f>",
                 Embeds = embedBuilders,
             });
 
