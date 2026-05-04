@@ -35,9 +35,9 @@
       },
       "Immediate.Handlers": {
         "type": "Direct",
-        "requested": "[3.4.0, )",
-        "resolved": "3.4.0",
-        "contentHash": "0ufw1Fu66I35Y+u/JpLJKOoyJgy74TKTtGQn/rx6zfV1mcZpPLXwIcfSWED14UulLJxSz8hmVg3cSg7cXhriiA=="
+        "requested": "[3.5.0, )",
+        "resolved": "3.5.0",
+        "contentHash": "IW5+Xk05QddTKbo1eTIucj+gVio1SYtVusedQYlU6xnioZxkwc8JYVXswtQd9W5F8u17ZwUaYAtP1874okktiA=="
       },
       "Meziantou.Analyzer": {
         "type": "Direct",
