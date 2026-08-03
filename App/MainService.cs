@@ -77,7 +77,6 @@ namespace App
                         PlayerCount = x.Server.PlayerCount.ToString("N0", System.Globalization.CultureInfo.InvariantCulture),
                         VillageCount = x.Server.VillageCount.ToString("N0", System.Globalization.CultureInfo.InvariantCulture)
                     })
-                    .OrderByDescending(x => x.PlayerCount)
                     .ToList()
                 );
 
@@ -93,19 +92,19 @@ namespace App
                             new EmbedFieldBuilder()
                             {
                                 Name = "Server",
-                                Value = string.Join("\n", regionGroup.Value.Select(x => x.Server)),
+                                Value = string.Join("\n", regionGroup.Value.OrderByDescending(x => x.PlayerCount).Select(x => x.Server)),
                                 Inline = true,
                             },
                             new EmbedFieldBuilder()
                             {
                                 Name = "Player count",
-                                Value = string.Join("\n", regionGroup.Value.Select(x => x.PlayerCount)),
+                                Value = string.Join("\n", regionGroup.Value.OrderByDescending(x => x.PlayerCount).Select(x => x.PlayerCount)),
                                 Inline = true
                             },
                             new EmbedFieldBuilder()
                             {
                                 Name = "Village count",
-                                Value = string.Join("\n", regionGroup.Value.Select(x => x.VillageCount)),
+                                Value = string.Join("\n", regionGroup.Value.OrderByDescending(x => x.PlayerCount).Select(x => x.VillageCount)),
                                 Inline = true
                             }],
                     })
