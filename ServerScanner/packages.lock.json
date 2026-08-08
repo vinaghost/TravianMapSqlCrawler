@@ -35,9 +35,12 @@
       },
       "Immediate.Handlers": {
         "type": "Direct",
-        "requested": "[3.4.0, )",
-        "resolved": "3.4.0",
-        "contentHash": "0ufw1Fu66I35Y+u/JpLJKOoyJgy74TKTtGQn/rx6zfV1mcZpPLXwIcfSWED14UulLJxSz8hmVg3cSg7cXhriiA=="
+        "requested": "[3.7.2, )",
+        "resolved": "3.7.2",
+        "contentHash": "T2Uw2odrbMgyhX84dRgZioQawiCnqks6D+ksdvnLIp0pYtrFznsJaS3FQ2mo2PTwu3dF0QhQjHHUq7wru4WPcA==",
+        "dependencies": {
+          "Microsoft.Extensions.DependencyInjection.Abstractions": "10.0.8"
+        }
       },
       "Meziantou.Analyzer": {
         "type": "Direct",
@@ -313,8 +316,8 @@
       },
       "Microsoft.Extensions.DependencyInjection.Abstractions": {
         "type": "Transitive",
-        "resolved": "10.0.6",
-        "contentHash": "w+dX4SIr1X9yegX2yX2dU1XtP4JAUVNdvOG/Evn+H+ndn96YzfIPX52FALXChrRNWFR9l77FQyg1mB7WQo6iOA=="
+        "resolved": "10.0.8",
+        "contentHash": "21nbDV60SRPWGIivsyl6lqBeEJNG1sginhhfWgRrr3Ais7aQ12To25OAHQxgoiJkjqy1aQ6RxpZBGYuTi7Ge6A=="
       },
       "Microsoft.Extensions.DependencyModel": {
         "type": "Transitive",
