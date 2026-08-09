@@ -103,9 +103,9 @@ namespace App.Commands
                 }
             }
 
-            var allianceCount = await context.Alliances.CountAsync(cancellationToken);
-            var playerCount = await context.Players.CountAsync(cancellationToken);
-            var villageCount = await context.Villages.CountAsync(cancellationToken);
+            var allianceCount = await context.Alliances.Where(a => a.PlayerCount > 0).CountAsync(cancellationToken);
+            var playerCount = await context.Players.Where(a => p.Population > 0).CountAsync(cancellationToken);
+            var villageCount = await context.Villages.Where(a => v.Population > 0).CountAsync(cancellationToken);
             var now = DateTime.Now;
             sw.Stop();
             return new Response(new Server()
