@@ -22,7 +22,6 @@ namespace ServerScanner
             {
                 services.AddHostedService<MainService>();
                 services.AddServerScannerHandlers();
-                services.AddServerScannerBehaviors();
             });
     }
 }

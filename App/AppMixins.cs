@@ -26,7 +26,6 @@ namespace App
                 services.AddHostedService<MainService>();
                 services.AddHttpClient();
                 services.AddAppHandlers();
-                services.AddAppBehaviors();
             });
     }
 }
