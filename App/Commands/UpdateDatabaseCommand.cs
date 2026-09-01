@@ -102,10 +102,10 @@ namespace App.Commands
                     }, TimeSpan.Zero);
                 }
             }
-
-            var allianceCount = await context.Alliances.CountAsync(cancellationToken);
-            var playerCount = await context.Players.CountAsync(cancellationToken);
-            var villageCount = await context.Villages.CountAsync(cancellationToken);
+            context.ChangeTracker.Clear();
+            var allianceCount = await context.Alliances.Where(a => a.PlayerCount > 0).CountAsync(cancellationToken);
+            var playerCount = await context.Players.Where(p => p.Population > 0).CountAsync(cancellationToken);
+            var villageCount = await context.Villages.Where(v => v.Population > 0).CountAsync(cancellationToken);
             var now = DateTime.Now;
             sw.Stop();
             return new Response(new Server()
