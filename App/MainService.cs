@@ -80,19 +80,44 @@ namespace App
                     .ToList()
                 );
 
-            var embedBuilders = serversGroupedByRegion
+            var singleServerGroups = serversGroupedByRegion.Where(x => x.Value.Count == 1).SelectMany(x => x.Value).ToList();
+            var multiServerGroups = serversGroupedByRegion.Where(x => x.Value.Count > 1).ToDictionary(x => x.Key, x => x.Value);
+
+            var embedBuilders = new List<EmbedBuilder>();
+
+            if (singleServerGroups.Count > 0)
+            {
+                var sortedServers = singleServerGroups.OrderByDescending(x => int.Parse(x.PlayerCount, System.Globalization.NumberStyles.AllowThousands)).ToList();
+                embedBuilders.Add(new EmbedBuilder
+                {
+                    Color = Color.Green,
+                    Description = $"Region server has {sortedServers.Count} servers.",
+                    Fields = [
+                        new EmbedFieldBuilder()
+                        {
+                            Name = "Server",
+                            Value = string.Join("\n", sortedServers.Select(x => x.Server)),
+                            Inline = true,
+                        },
+                        new EmbedFieldBuilder()
+                        {
+                            Name = "Player count",
+                            Value = string.Join("\n", sortedServers.Select(x => x.PlayerCount)),
+                            Inline = true
+                        },
+                        new EmbedFieldBuilder()
+                        {
+                            Name = "Village count",
+                            Value = string.Join("\n", sortedServers.Select(x => x.VillageCount)),
+                            Inline = true
+                        }],
+                });
+            }
+
+            embedBuilders.AddRange(multiServerGroups
                 .OrderByDescending(x => x.Value.Count)
                 .Select(regionGroup =>
                 {
-                    if (regionGroup.Value.Count == 0)
-                    {
-                        return new EmbedBuilder
-                        {
-                            Color = Color.Red,
-                            Description = $"Region {regionGroup.Key} has no servers.",
-                        };
-                    }
-
                     var sortedServers = regionGroup.Value.OrderByDescending(x => int.Parse(x.PlayerCount, System.Globalization.NumberStyles.AllowThousands)).ToList();
                     return new EmbedBuilder
                     {
@@ -118,8 +143,7 @@ namespace App
                                 Inline = true
                             }],
                     };
-                })
-                .ToList();
+                }));
 
             using var webhook = new DiscordWebhook(new Uri(_configuration["DiscordWebhookUrl"]!));
             await webhook.SendMessageAsync(new MessageBuilder
