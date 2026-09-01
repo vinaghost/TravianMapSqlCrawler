@@ -77,38 +77,48 @@ namespace App
                         PlayerCount = x.Server.PlayerCount.ToString("N0", System.Globalization.CultureInfo.InvariantCulture),
                         VillageCount = x.Server.VillageCount.ToString("N0", System.Globalization.CultureInfo.InvariantCulture)
                     })
-                    .OrderByDescending(x => x.PlayerCount)
                     .ToList()
                 );
 
             var embedBuilders = serversGroupedByRegion
                 .OrderByDescending(x => x.Value.Count)
-                .ThenByDescending(x => x.Value.FirstOrDefault()?.PlayerCount)
                 .Select(regionGroup =>
-                    new EmbedBuilder
+                {
+                    if (regionGroup.Value.Count == 0)
+                    {
+                        return new EmbedBuilder
+                        {
+                            Color = Color.Red,
+                            Description = $"Region {regionGroup.Key} has no servers.",
+                        };
+                    }
+
+                    var sortedServers = regionGroup.Value.OrderByDescending(x => int.Parse(x.PlayerCount, System.Globalization.NumberStyles.AllowThousands)).ToList();
+                    return new EmbedBuilder
                     {
                         Color = Color.Green,
-                        Description = regionGroup.Value.Count == 0 ? "No servers found." : $"Region {regionGroup.Key} has {regionGroup.Value.Count} servers.",
+                        Description = $"Region {regionGroup.Key} has {sortedServers.Count} servers.",
                         Fields = [
                             new EmbedFieldBuilder()
                             {
                                 Name = "Server",
-                                Value = string.Join("\n", regionGroup.Value.Select(x => x.Server)),
+                                Value = string.Join("\n", sortedServers.Select(x => x.Server)),
                                 Inline = true,
                             },
                             new EmbedFieldBuilder()
                             {
                                 Name = "Player count",
-                                Value = string.Join("\n", regionGroup.Value.Select(x => x.PlayerCount)),
+                                Value = string.Join("\n", sortedServers.Select(x => x.PlayerCount)),
                                 Inline = true
                             },
                             new EmbedFieldBuilder()
                             {
                                 Name = "Village count",
-                                Value = string.Join("\n", regionGroup.Value.Select(x => x.VillageCount)),
+                                Value = string.Join("\n", sortedServers.Select(x => x.VillageCount)),
                                 Inline = true
                             }],
-                    })
+                    };
+                })
                 .ToList();
 
             using var webhook = new DiscordWebhook(new Uri(_configuration["DiscordWebhookUrl"]!));
