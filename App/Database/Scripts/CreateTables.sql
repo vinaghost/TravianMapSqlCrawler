@@ -14,7 +14,7 @@ CREATE TABLE IF NOT EXISTS `Players` (
     `Population` INT NOT NULL,
     `VillageCount` INT NOT NULL,
     `IsDeleted` TINYINT(1) NOT NULL,
-    PRIMARY KEY (`Id`),
+    PRIMARY KEY (`Id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE INDEX IF NOT EXISTS `IX_Players_Name_Active` ON `Players` (`Name`, `IsDeleted`);
@@ -36,7 +36,7 @@ CREATE TABLE IF NOT EXISTS `Villages` (
     `IsHarbor` TINYINT(1) NOT NULL,
     `VictoryPoints` INT NOT NULL,
     `IsDestroyed` TINYINT(1) NOT NULL DEFAULT 0, 
-    PRIMARY KEY (`Id`),
+    PRIMARY KEY (`Id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE INDEX IF NOT EXISTS `IX_Villages_Players_Active` ON `Villages` (`PlayerId`, `IsDestroyed`);
