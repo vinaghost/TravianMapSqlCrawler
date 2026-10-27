@@ -34,7 +34,7 @@ jobs:
     permissions:
       contents: read
       packages: read
-    needs: scan-server
+    #needs: scan-server
     environment: mapsql
     steps:
       - name: Login to Docker Hub
