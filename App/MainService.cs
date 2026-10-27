@@ -337,7 +337,7 @@ namespace App
 
         private async Task UpdateServerList(List<Server> servers)
         {
-            var connection = new MySqlConnection($"{_connections.Value.Prod}AllowLoadLocalInfile=true;AllowUserVariables=True;");
+            await using var connection = new MySqlConnection($"{_connections.Value.Prod}AllowLoadLocalInfile=true;AllowUserVariables=True;");
             await connection.OpenAsync();
 
             const string databaseName = "Servers";

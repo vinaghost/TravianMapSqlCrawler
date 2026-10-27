@@ -23,7 +23,7 @@ namespace App.Database
         {
             var sw = Stopwatch.StartNew();
 
-            using var connection = await CreateDatabaseIfNotExsits(databaseName);
+            await using var connection = await CreateDatabaseIfNotExsits(databaseName);
 
             var villages = DataManipulation.Villages(rawVillages);
             var players = DataManipulation.Players(rawVillages);
