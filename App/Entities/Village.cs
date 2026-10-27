@@ -1,20 +1,11 @@
-﻿using Microsoft.EntityFrameworkCore;
-using System.ComponentModel.DataAnnotations.Schema;
-
-namespace App.Entities
+﻿namespace App.Entities
 {
-    [Index(nameof(Name))]
-    [Index(nameof(X), nameof(Y))]
     public class Village
     {
-        [DatabaseGenerated(DatabaseGeneratedOption.None)]
         public int Id { get; set; }
-
-        public ICollection<VillageHistory> History { get; set; } = [];
-
         public int MapId { get; set; }
-
         public int PlayerId { get; set; }
+        public int? PreviousPlayerId { get; set; } = null;
         public string Name { get; set; } = "";
         public int X { get; set; }
         public int Y { get; set; }
@@ -25,5 +16,6 @@ namespace App.Entities
         public bool IsCity { get; set; }
         public bool IsHarbor { get; set; }
         public int VictoryPoints { get; set; }
+        public bool IsDestroyed { get; set; } = false;
     }
 }

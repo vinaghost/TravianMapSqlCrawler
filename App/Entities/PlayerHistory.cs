@@ -1,17 +1,12 @@
-﻿using Microsoft.EntityFrameworkCore;
-
-namespace App.Entities
+﻿namespace App.Entities
 {
-    [Index(nameof(PlayerId), nameof(Date))]
-    [Index(nameof(PlayerId), nameof(ChangePopulation))]
-    [Index(nameof(PlayerId), nameof(ChangeAlliance))]
     public class PlayerHistory
     {
         public int Id { get; set; }
 
         public int PlayerId { get; set; }
 
-        public DateTime Date { get; set; }
+        public DateOnly SnapshotDate { get; set; }
 
         public int AllianceId { get; set; }
 
