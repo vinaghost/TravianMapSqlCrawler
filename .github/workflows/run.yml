@@ -8,6 +8,7 @@ on:
   #  - cron:  17 02 * * *
 jobs:
   scan-server:
+    if: false
     runs-on: ubuntu-latest
     permissions:
       contents: read
