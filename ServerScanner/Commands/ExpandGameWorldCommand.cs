@@ -1,4 +1,5 @@
 ﻿using Immediate.Handlers.Shared;
+
 using Microsoft.Extensions.Logging;
 using Microsoft.Playwright;
 
@@ -16,7 +17,7 @@ namespace ServerScanner.Commands
         {
             var page = command.Page;
 
-            await page.ClickAsync("#root > header > div.headerContainerStart > button");
+            await page.ClickAsync("div.headerContainerStart button.framed.green.withText");
             logger.LogInformation("Clicked Join new game world.");
         }
     }
