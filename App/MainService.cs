@@ -36,10 +36,9 @@ namespace App
 
         public async Task StartAsync(CancellationToken cancellationToken)
         {
-            var httpClient = new HttpClient();
-            var serverUrls = await GetServerUrls(httpClient);
+            var serverUrls = await GetServerUrls();
 
-            var rawVillageRecords = await GetRawVillages(httpClient, serverUrls);
+            var rawVillageRecords = await GetRawVillages(serverUrls);
 
             ConsoleTable
                .From(rawVillageRecords.Select(r => new { r.ServerUrl, r.ExecutionTime })
@@ -156,6 +155,11 @@ namespace App
             _hostApplicationLifetime.StopApplication();
         }
 
+        public async Task StopAsync(CancellationToken cancellationToken)
+        {
+            await Task.CompletedTask;
+        }
+
         private async Task<Response[]> UpdateServerRecords(RawVillageRecord[] rawVillageRecords)
         {
             var updateRecordService = new UpdateRecordService(_configuration["DatabaseConnectionString"]!);
@@ -186,7 +190,7 @@ namespace App
 
         public record struct RawVillageRecord(string ServerUrl, List<RawVillage> RawVillages, TimeSpan ExecutionTime);
 
-        private async Task<RawVillageRecord[]> GetRawVillages(HttpClient httpClient, List<string> serverUrls)
+        private static async Task<RawVillageRecord[]> GetRawVillages(List<string> serverUrls)
         {
             using var semaphore = new SemaphoreSlim(10);
 
@@ -196,7 +200,7 @@ namespace App
                 try
                 {
                     var sw = Stopwatch.StartNew();
-                    var mapStream = await GetMapSql(httpClient, serverUrl) ?? throw new Exception($"Map SQL not found for server {serverUrl}");
+                    var mapStream = await GetMapSql(serverUrl) ?? throw new Exception($"Map SQL not found for server {serverUrl}");
                     var rawVillages = await GetRawVillages(mapStream);
                     sw.Stop();
                     return new RawVillageRecord(serverUrl, rawVillages, sw.Elapsed);
@@ -217,11 +221,6 @@ namespace App
             mainSw.Stop();
             Log.Information("Runtime for fetching & parsing map SQLs: {Minutes}m {Seconds}s", mainSw.ElapsedMilliseconds / 1000 / 60, (mainSw.ElapsedMilliseconds / 1000) % 60);
             return [.. rawVillageRecords.Where(x => x != default)];
-        }
-
-        public async Task StopAsync(CancellationToken cancellationToken)
-        {
-            await Task.CompletedTask;
         }
 
         public class TravianResponse
@@ -245,8 +244,10 @@ namespace App
             public required string Url { get; set; }
         }
 
-        private static async Task<List<string>> GetServerUrls(HttpClient httpClient)
+        private static async Task<List<string>> GetServerUrls()
         {
+            using var httpClient = new HttpClient();
+
             const string Url = "https://status.travian.com/";
 
             var response = await httpClient.GetAsync(Url);
@@ -280,8 +281,9 @@ namespace App
             return rows;
         }
 
-        private static async Task<StreamReader?> GetMapSql(HttpClient httpClient, string serverUrl)
+        private static async Task<StreamReader?> GetMapSql(string serverUrl)
         {
+            using var httpClient = new HttpClient();
             const string UrlMapSqlTemplate = "https://{0}/map.sql";
 
             var mapUrl = string.Format(UrlMapSqlTemplate, serverUrl);

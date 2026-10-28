@@ -188,6 +188,7 @@ namespace App
             var server = new Server()
             {
                 Url = databaseName,
+                LastUpdate = DateTime.UtcNow,
             };
 
             var allianceCountQuery = "SELECT COUNT(1) FROM `Alliances` WHERE PlayerCount > 0;";
