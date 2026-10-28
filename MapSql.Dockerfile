@@ -10,8 +10,7 @@ RUN dotnet restore App/App.csproj /p:RestorePackagesWithLockFile=true /p:Publish
 COPY App/ App/
 RUN dotnet publish App/App.csproj /p:PublishReadyToRun=true -a $TARGETARCH --self-contained --no-restore -c Release -o /app
 
-FROM mcr.microsoft.com/dotnet/runtime-deps:10.0 AS final
+FROM mcr.microsoft.com/dotnet/runtime-deps:10.0-noble-chiseled AS final
 WORKDIR /app
-COPY --from=build /app .
-RUN chmod +x App
+COPY --from=build --chown=app:app /app .
 ENTRYPOINT ["./App"]
