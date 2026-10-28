@@ -164,7 +164,7 @@ namespace App
         {
             var updateRecordService = new UpdateRecordService(_configuration["DatabaseConnectionString"]!);
 
-            using var semaphore = new SemaphoreSlim(2);
+            using var semaphore = new SemaphoreSlim(10);
             var tasks = rawVillageRecords
                 .Where(x => x.RawVillages.Count > 0)
                 .Select(record => Task.Run(async () =>
