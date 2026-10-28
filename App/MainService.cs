@@ -1,6 +1,8 @@
 ﻿using System.Diagnostics;
 using System.Drawing;
 using System.Text;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using System.Text.RegularExpressions;
 
 using App.Database;
@@ -236,29 +238,58 @@ namespace App
             await Task.CompletedTask;
         }
 
+        public class TravianResponse
+        {
+            [JsonPropertyName("items")]
+            public required Dictionary<string, ServerInfo> Items { get; set; }
+        }
+
+        public class ServerInfo
+        {
+            [JsonPropertyName("id")]
+            public required string Id { get; set; }
+
+            [JsonPropertyName("name")]
+            public required string Name { get; set; }
+
+            [JsonPropertyName("state")]
+            public required int State { get; set; }
+
+            [JsonPropertyName("url")]
+            public required string Url { get; set; }
+        }
+
         private static async Task<List<string>> GetServerUrls(HttpClient httpClient)
         {
-            const string Url = "https://travmap.shishnet.org/status.php";
+            const string Url = "https://status.travian.com/";
 
             var response = await httpClient.GetAsync(Url);
             response.EnsureSuccessStatusCode();
             var html = new HtmlDocument();
             html.Load(response.Content.ReadAsStream());
 
-            var table = html.DocumentNode
-                .Descendants("table")
-                .FirstOrDefault();
+            var scriptElement = html.GetElementbyId("__GW_DATA__");
 
-            if (table is null) return [];
+            if (scriptElement is null) return [];
 
-            var rows = table
-               .Descendants("tr")
-               .Select(row => row.Descendants("td"))
-               .Where(cells => cells.Count() > 3)
-               .Select(cells => cells.ToList())
-               .Where(cells => cells[2].InnerText.Trim() == "ok")
-               .Select(cells => cells[0].InnerText.Trim())
-               .ToList();
+            var scriptContent = scriptElement.InnerText;
+
+            var result = JsonSerializer.Deserialize<TravianResponse>(scriptContent);
+
+            var rows = new List<string>();
+            if (result?.Items is not null)
+            {
+                foreach (var kvp in result.Items)
+                {
+                    string rawUrl = kvp.Value.Url;
+
+                    // Convert string to Uri to safely pull out the host segment
+                    var uri = new Uri(rawUrl);
+                    string host = uri.Host;
+
+                    rows.Add(host);
+                }
+            }
 
             return rows;
         }

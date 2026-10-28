@@ -84,6 +84,11 @@ namespace App.Database
                 SELECT `Id`, `Name`, `PlayerCount` FROM {stgAlliances}
                 ON DUPLICATE KEY UPDATE `Name` = VALUES(`Name`), `PlayerCount` = VALUES(`PlayerCount`);
 
+                UPDATE `Alliances` a
+                LEFT JOIN {stgAlliances} s ON a.`Id` = s.`Id`
+                SET a.`PlayerCount` = 0
+                WHERE s.`Id` IS NULL;
+
                 -- B. Upsert Players (Reset active entities to IsDeleted=0)
                 INSERT INTO `Players` (`Id`, `AllianceId`, `Name`, `Population`, `VillageCount`, `IsDeleted`)
                 SELECT `Id`, `AllianceId`, `Name`, `Population`, `VillageCount`, 0 FROM {stgPlayers}
