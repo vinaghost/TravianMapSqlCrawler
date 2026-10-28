@@ -1,5 +1,7 @@
 ﻿using App;
+
 using Microsoft.Extensions.Hosting;
+
 using Serilog;
 
 Log.Logger = new LoggerConfiguration()
@@ -10,7 +12,6 @@ try
 {
     var host = Host.CreateDefaultBuilder(args)
         .UseConsoleLifetime()
-        .BindConfiguration()
         .ConfigureLogging()
         .ConfigureServices()
         .Build();

@@ -17,43 +17,31 @@ using CSharpDiscordWebhook.Objects;
 using HtmlAgilityPack;
 
 using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 
 using MySqlConnector;
 
 using Serilog;
-using Serilog.Core;
 
 namespace App
 {
     public partial class MainService : IHostedService
     {
         private readonly IHostApplicationLifetime _hostApplicationLifetime;
-        private readonly IServiceScopeFactory _serviceScopeFactory;
-        private readonly ILogger<MainService> _logger;
         private readonly IConfiguration _configuration;
-        private readonly IOptions<ConnectionStrings> _connections;
 
-        public MainService(IHostApplicationLifetime hostApplicationLifetime, ILogger<MainService> logger, IServiceScopeFactory serviceScopeFactory, IConfiguration configuration, IOptions<ConnectionStrings> connections)
+        public MainService(IHostApplicationLifetime hostApplicationLifetime, IConfiguration configuration)
         {
             _hostApplicationLifetime = hostApplicationLifetime;
-            _logger = logger;
-            _serviceScopeFactory = serviceScopeFactory;
             _configuration = configuration;
-            _connections = connections;
         }
 
         public async Task StartAsync(CancellationToken cancellationToken)
         {
-            using var scope = _serviceScopeFactory.CreateScope();
-
             var httpClient = new HttpClient();
             var serverUrls = await GetServerUrls(httpClient);
 
-            var rawVillageRecords = await GetRawVillages(httpClient, serverUrls);
+            var rawVillageRecords = await GetRawVillages(httpClient, [serverUrls[0]]);
 
             ConsoleTable
                .From(rawVillageRecords.Select(r => new { r.ServerUrl, r.ExecutionTime })
@@ -172,7 +160,7 @@ namespace App
 
         private async Task<Response[]> UpdateServerRecords(RawVillageRecord[] rawVillageRecords)
         {
-            var updateRecordService = new UpdateRecordService(_connections.Value.Prod);
+            var updateRecordService = new UpdateRecordService(_configuration["DatabaseConnectionString"]!);
 
             using var semaphore = new SemaphoreSlim(2);
             var tasks = rawVillageRecords
@@ -194,7 +182,7 @@ namespace App
             var sw = Stopwatch.StartNew();
             var records = await Task.WhenAll(tasks);
             sw.Stop();
-            _logger.LogInformation("Runtime for update map SQLs to database: {Minutes}m {Seconds}s", sw.ElapsedMilliseconds / 1000 / 60, (sw.ElapsedMilliseconds / 1000) % 60);
+            Log.Information("Runtime for update map SQLs to database: {Minutes}m {Seconds}s", sw.ElapsedMilliseconds / 1000 / 60, (sw.ElapsedMilliseconds / 1000) % 60);
             return records;
         }
 
@@ -217,7 +205,7 @@ namespace App
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError(ex, "Error while processing map SQL for server {Url}", serverUrl);
+                    Log.Error(ex, "Error while processing map SQL for server {Url}", serverUrl);
                     return default;
                 }
                 finally
@@ -229,7 +217,7 @@ namespace App
             var mainSw = Stopwatch.StartNew();
             var rawVillageRecords = await Task.WhenAll(tasks);
             mainSw.Stop();
-            _logger.LogInformation("Runtime for fetching & parsing map SQLs: {Minutes}m {Seconds}s", mainSw.ElapsedMilliseconds / 1000 / 60, (mainSw.ElapsedMilliseconds / 1000) % 60);
+            Log.Information("Runtime for fetching & parsing map SQLs: {Minutes}m {Seconds}s", mainSw.ElapsedMilliseconds / 1000 / 60, (mainSw.ElapsedMilliseconds / 1000) % 60);
             return [.. rawVillageRecords.Where(x => x != default)];
         }
 
@@ -368,7 +356,7 @@ namespace App
 
         private async Task UpdateServerList(List<Server> servers)
         {
-            await using var connection = new MySqlConnection($"{_connections.Value.Prod}AllowLoadLocalInfile=true;AllowUserVariables=True;");
+            await using var connection = new MySqlConnection($"{_configuration["DatabaseConnectionString"]!}AllowLoadLocalInfile=true;AllowUserVariables=True;");
             await connection.OpenAsync();
 
             const string databaseName = "Servers";

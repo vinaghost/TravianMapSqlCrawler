@@ -1,14 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Data;
-using System.Diagnostics;
+﻿using System.Diagnostics;
 using System.Reflection;
 using System.Text;
 
 using App.Entities;
 using App.Models;
-
-using Microsoft.Extensions.Logging;
 
 using MySqlConnector;
 
@@ -30,56 +25,68 @@ namespace App.Database
             var players = DataManipulation.Players(rawVillages);
             var alliances = DataManipulation.Alliances(rawVillages);
 
-            using var transaction = await connection.BeginTransactionAsync();
-
             // Unique runtime identifier for the staging session tables
             string sessionSuffix = Guid.NewGuid().ToString("N")[..8];
-            string stgAlliances = $"`stg_alliances_{sessionSuffix}`";
-            string stgPlayers = $"`stg_players_{sessionSuffix}`";
-            string stgVillages = $"`stg_villages_{sessionSuffix}`";
+            string stgAlliances = $"stg_alliances_{sessionSuffix}";
+            string stgPlayers = $"stg_players_{sessionSuffix}";
+            string stgVillages = $"stg_villages_{sessionSuffix}";
 
-            try
-            {
-                // ====================================================================
-                // STEP 1: CREATE MEMORY-BACKED TEMPORARY STAGING TABLES
-                // ====================================================================
-                using (var cmd = new MySqlCommand($@"
+            // ====================================================================
+            // STEP 1: CREATE MEMORY-BACKED TEMPORARY STAGING TABLES
+            // ====================================================================
+            using (var cmd = new MySqlCommand($@"
                 CREATE TEMPORARY TABLE {stgAlliances} LIKE `Alliances`;
                 CREATE TEMPORARY TABLE {stgPlayers} LIKE `Players`;
-                CREATE TEMPORARY TABLE {stgVillages} LIKE `Villages`;", connection, transaction))
+                CREATE TEMPORARY TABLE {stgVillages} LIKE `Villages`;", connection))
+            {
+                await cmd.ExecuteNonQueryAsync();
+            }
+
+            // ====================================================================
+            // STEP 2: BUILD STRING STREAM DATA BUFFERS
+            // ====================================================================
+            using var allianceStream = new MemoryStream();
+            await using (var allianceWriter = new StreamWriter(allianceStream, Encoding.UTF8, leaveOpen: true))
+            {
+                foreach (var a in alliances)
                 {
-                    await cmd.ExecuteNonQueryAsync();
+                    await allianceWriter.WriteLineAsync($"{a.Id}\t{EscapeCsv(a.Name)}\t{a.PlayerCount}");
                 }
 
-                // ====================================================================
-                // STEP 2: BUILD STRING STREAM DATA BUFFERS
-                // ====================================================================
-                var allianceCsv = new StringBuilder();
-                foreach (var a in alliances)
-                    allianceCsv.AppendLine($"{a.Id}\t{EscapeCsv(a.Name)}\t{a.PlayerCount}");
+                await allianceWriter.FlushAsync();
+            }
 
-                var playerCsv = new StringBuilder();
+            using var playerStream = new MemoryStream();
+            await using (var playerWriter = new StreamWriter(playerStream, Encoding.UTF8, leaveOpen: true))
+            {
                 foreach (var p in players)
-                    playerCsv.AppendLine($"{p.Id}\t{p.AllianceId}\t{EscapeCsv(p.Name)}\t{p.Population}\t{p.VillageCount}\t0"); // Always 0 initially in file dump
+                {
+                    await playerWriter.WriteLineAsync($"{p.Id}\t{p.AllianceId}\t{EscapeCsv(p.Name)}\t{p.Population}\t{p.VillageCount}\t0"); // Always 0 initially in file dump
+                }
+                await playerWriter.FlushAsync();
+            }
 
-                var villageCsv = new StringBuilder();
+            using var villageStream = new MemoryStream();
+            await using (var villageWriter = new StreamWriter(villageStream, Encoding.UTF8, leaveOpen: true))
+            {
                 foreach (var v in villages)
                 {
                     string prevPlayer = v.PreviousPlayerId.HasValue ? v.PreviousPlayerId.Value.ToString() : "\\N";
-                    villageCsv.AppendLine($"{v.Id}\t{v.MapId}\t{v.PlayerId}\t{prevPlayer}\t{EscapeCsv(v.Name)}\t{v.X}\t{v.Y}\t{v.Tribe}\t{v.Population}\t{EscapeCsv(v.Region)}\t{ToString(v.IsCapital)}\t{ToString(v.IsCity)}\t{ToString(v.IsHarbor)}\t{v.VictoryPoints}\t0");
+                    await villageWriter.WriteLineAsync($"{v.Id}\t{v.MapId}\t{v.PlayerId}\t{prevPlayer}\t{EscapeCsv(v.Name)}\t{v.X}\t{v.Y}\t{v.Tribe}\t{v.Population}\t{EscapeCsv(v.Region)}\t{ToString(v.IsCapital)}\t{ToString(v.IsCity)}\t{ToString(v.IsHarbor)}\t{v.VictoryPoints}\t0");
                 }
+            }
 
-                // ====================================================================
-                // STEP 3: NATIVE STREAM BULK LOAD INTO STAGING TABLES
-                // ====================================================================
-                await StreamLocalInfileAsync(connection, transaction, stgAlliances, allianceCsv.ToString(), "(`Id`, `Name`, `PlayerCount`)");
-                await StreamLocalInfileAsync(connection, transaction, stgPlayers, playerCsv.ToString(), "(`Id`, `AllianceId`, `Name`, `Population`, `VillageCount`, `IsDeleted`)");
-                await StreamLocalInfileAsync(connection, transaction, stgVillages, villageCsv.ToString(), "(`Id`, `MapId`, `PlayerId`, `PreviousPlayerId`, `Name`, `X`, `Y`, `Tribe`, `Population`, `Region`, `IsCapital`, `IsCity`, `IsHarbor`, `VictoryPoints`, `IsDestroyed`)");
+            // ====================================================================
+            // STEP 3: NATIVE STREAM BULK LOAD INTO STAGING TABLES
+            // ====================================================================
+            await StreamLocalInfileAsync(connection, stgAlliances, allianceStream, ["Id", "Name", "PlayerCount"]);
+            await StreamLocalInfileAsync(connection, stgPlayers, playerStream, ["Id", "AllianceId", "Name", "Population", "VillageCount", "IsDeleted"]);
+            await StreamLocalInfileAsync(connection, stgVillages, villageStream, ["Id", "MapId", "PlayerId", "PreviousPlayerId", "Name", "X", "Y", "Tribe", "Population", "Region", "IsCapital", "IsCity", "IsHarbor", "VictoryPoints", "IsDestroyed"]);
 
-                // ====================================================================
-                // STEP 4: UPSERT INTO MAIN TABLES & AUTO-FLAG MISSING RECORDS
-                // ====================================================================
-                string processQueries = $@"
+            // ====================================================================
+            // STEP 4: UPSERT INTO MAIN TABLES & AUTO-FLAG MISSING RECORDS
+            // ====================================================================
+            string processQueries = $@"
                 -- A. Upsert Alliances (No modifications to deletion rules)
                 INSERT INTO `Alliances` (`Id`, `Name`, `PlayerCount`)
                 SELECT `Id`, `Name`, `PlayerCount` FROM {stgAlliances}
@@ -113,7 +120,7 @@ namespace App.Database
                 FROM {stgVillages}
                 ON DUPLICATE KEY UPDATE
                     -- 1. Check if the incoming PlayerId is different from what we already have in the database
-                    `PreviousPlayerId` = IF(`PlayerId` <> VALUES(`PlayerId`), `PlayerId`, `PreviousPlayerId`),
+                    `PreviousPlayerId` = IF(`Villages`.`PlayerId` <> VALUES(`PlayerId`), `Villages`.`PlayerId`, `Villages`.`PreviousPlayerId`),
 
                     -- 2. Update the current owner to the new PlayerId
                     `PlayerId` = VALUES(`PlayerId`),
@@ -133,9 +140,6 @@ namespace App.Database
                 SET v.`IsDestroyed` = 1
                 WHERE s.`Id` IS NULL;
 
-                // ====================================================================
-                // STEP 5: DAILY HISTORY SNAPSHOT ENGINE (INCLUDING SOFT DELETED BROKEN DATA)
-                // ====================================================================
                 SET @today = CURRENT_DATE();
                 SET @yesterday = DATE_SUB(@today, INTERVAL 1 DAY);
                 SET @already_run = (SELECT 1 FROM `PlayersHistory` WHERE `SnapshotDate` = @today LIMIT 1);
@@ -165,6 +169,9 @@ namespace App.Database
                 ON DUPLICATE KEY UPDATE `PlayerCount` = VALUES(`PlayerCount`), `ChangePlayerCount` = VALUES(`ChangePlayerCount`);
             ";
 
+            using var transaction = await connection.BeginTransactionAsync();
+            try
+            {
                 using (var processCmd = new MySqlCommand(processQueries, connection, transaction))
                 {
                     processCmd.CommandTimeout = 300; // 5-minute threshold safety margin for large worlds
@@ -205,8 +212,6 @@ namespace App.Database
                 server.VillageCount = villageCount;
             }
             sw.Stop();
-            Log.Information("{Server} done in {Minutes}m {Seconds}s", databaseName, sw.ElapsedMilliseconds / 1000 / 60, (sw.ElapsedMilliseconds / 1000) % 60);
-
             return new Response(server, sw.Elapsed);
         }
 
@@ -244,26 +249,19 @@ namespace App.Database
             return reader.ReadToEnd();
         }
 
-        private static async Task StreamLocalInfileAsync(MySqlConnection conn, MySqlTransaction tx, string table, string csvData, string columns)
+        private static async Task StreamLocalInfileAsync(MySqlConnection connection, string table, MemoryStream memoryStream, string[] columns)
         {
-            string tempPath = Path.Combine(Path.GetTempPath(), $"{table}.tsv");
-            await File.WriteAllTextAsync(tempPath, csvData, Encoding.UTF8);
-
-            try
+            memoryStream.Position = 0;
+            var loader = new MySqlBulkLoader(connection)
             {
-                // MariaDB local stream load assignment structure mapped syntax
-                string loadQuery = $"LOAD DATA LOCAL INFILE '{tempPath.Replace("\\", "/")}' " +
-                                   $"INTO TABLE {table} " +
-                                   $"FIELDS TERMINATED BY '\t' LINES TERMINATED BY '\n' " +
-                                   $"{columns};";
+                TableName = table,
+                FieldTerminator = "\t",
+                LineTerminator = "\n",
+                SourceStream = memoryStream,
+            };
 
-                using var cmd = new MySqlCommand(loadQuery, conn, tx);
-                await cmd.ExecuteNonQueryAsync();
-            }
-            finally
-            {
-                if (File.Exists(tempPath)) File.Delete(tempPath);
-            }
+            loader.Columns.AddRange(columns);
+            await loader.LoadAsync();
         }
 
         private static string EscapeCsv(string value)
