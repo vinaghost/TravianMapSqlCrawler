@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Diagnostics;
 using System.Reflection;
 using System.Text;
@@ -182,6 +183,12 @@ namespace App.Database
             {
                 Url = databaseName,
             };
+
+            if (connection.State != ConnectionState.Open)
+            {
+                await connection.OpenAsync();
+                await connection.ChangeDatabaseAsync(databaseName);
+            }
 
             var allianceCountQuery = "SELECT COUNT(1) FROM `Alliances` WHERE PlayerCount > 0;";
             using (var allianceCountCmd = new MySqlCommand(allianceCountQuery, connection))
