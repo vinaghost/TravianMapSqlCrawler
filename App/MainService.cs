@@ -174,7 +174,7 @@ namespace App
         {
             var updateRecordService = new UpdateRecordService(_connections.Value.Prod);
 
-            using var semaphore = new SemaphoreSlim(5);
+            using var semaphore = new SemaphoreSlim(2);
             var tasks = rawVillageRecords
                 .Where(x => x.RawVillages.Count > 0)
                 .Select(record => Task.Run(async () =>
