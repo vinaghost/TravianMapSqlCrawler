@@ -184,12 +184,6 @@ namespace App.Database
                 Url = databaseName,
             };
 
-            if (connection.State != ConnectionState.Open)
-            {
-                await connection.OpenAsync();
-                await connection.ChangeDatabaseAsync(databaseName);
-            }
-
             var allianceCountQuery = "SELECT COUNT(1) FROM `Alliances` WHERE PlayerCount > 0;";
             using (var allianceCountCmd = new MySqlCommand(allianceCountQuery, connection))
             {
@@ -210,8 +204,9 @@ namespace App.Database
                 var villageCount = Convert.ToInt32(await villageCountCmd.ExecuteScalarAsync());
                 server.VillageCount = villageCount;
             }
-
             sw.Stop();
+            Log.Information("{Server} done in {Minutes}m {Seconds}s", databaseName, sw.ElapsedMilliseconds / 1000 / 60, (sw.ElapsedMilliseconds / 1000) % 60);
+
             return new Response(server, sw.Elapsed);
         }
 
