@@ -369,7 +369,7 @@ namespace App
             await connection.ChangeDatabaseAsync(databaseName);
 
             var createTableScript = $@"CREATE TABLE IF NOT EXISTS `Servers` (
-                `Id` INT NOT NULL,
+                `Id` INT NOT NULL AUTO_INCREMENT,
                 `Url` VARCHAR(255) NOT NULL DEFAULT '',
                 `AllianceCount` INT NOT NULL,
                 `PlayerCount` INT NOT NULL,
