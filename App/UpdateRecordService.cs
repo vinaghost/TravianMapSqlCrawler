@@ -3,13 +3,12 @@ using System.Reflection;
 using System.Text;
 
 using App.Entities;
-using App.Models;
 
 using MySqlConnector;
 
 using Serilog;
 
-namespace App.Database
+namespace App
 {
     public sealed record Response(Server Server, TimeSpan Runtime);
 
@@ -21,9 +20,9 @@ namespace App.Database
 
             await using var connection = await CreateDatabaseIfNotExsits(databaseName);
 
-            var villages = DataManipulation.Villages(rawVillages);
-            var players = DataManipulation.Players(rawVillages);
-            var alliances = DataManipulation.Alliances(rawVillages);
+            var villages = Villages(rawVillages);
+            var players = Players(rawVillages);
+            var alliances = Alliances(rawVillages);
 
             // Unique runtime identifier for the staging session tables
             string sessionSuffix = Guid.NewGuid().ToString("N")[..8];
@@ -242,7 +241,7 @@ namespace App.Database
         private static string GetSqlCreateTableScript()
         {
             Assembly assembly = Assembly.GetExecutingAssembly();
-            string resourceName = "App.Database.Scripts.CreateTables.sql";
+            string resourceName = "App.Scripts.CreateTables.sql";
 
             using Stream stream = (assembly.GetManifestResourceStream(resourceName) ?? throw new FileNotFoundException($"Could not find the embedded resource: {resourceName}")) ?? throw new FileNotFoundException($"Could not find the embedded resource: {resourceName}");
             using StreamReader reader = new(stream);
@@ -271,5 +270,59 @@ namespace App.Database
         }
 
         private static string ToString(bool value) => value ? "1" : "0";
+
+        private static List<Alliance> Alliances(List<RawVillage> rawVillages)
+        {
+            var alliances = rawVillages
+                .DistinctBy(x => x.PlayerId)
+                .GroupBy(x => x.AllianceId)
+                .Select(x => new Alliance
+                {
+                    Id = x.Key,
+                    Name = x.Select(x => x.AllianceName).First(),
+                    PlayerCount = x.Count(),
+                })
+                .ToList();
+            return alliances;
+        }
+
+        private static List<Player> Players(List<RawVillage> rawVillages)
+        {
+            var players = rawVillages
+                .GroupBy(x => x.PlayerId)
+                .Select(x => new Player
+                {
+                    Id = x.Key,
+                    Name = x.Select(x => x.PlayerName).First(),
+                    AllianceId = x.Select(x => x.AllianceId).First(),
+                    Population = x.Sum(x => x.Population),
+                    VillageCount = x.Count(),
+                })
+                .ToList();
+            return players;
+        }
+
+        private static List<Village> Villages(List<RawVillage> rawVillages)
+        {
+            var villages = rawVillages
+                .Select(x => new Village
+                {
+                    Id = x.VillageId,
+                    MapId = x.MapId,
+                    Name = x.VillageName,
+                    Tribe = x.Tribe,
+                    X = x.X,
+                    Y = x.Y,
+                    PlayerId = x.PlayerId,
+                    IsCapital = x.IsCapital,
+                    IsCity = x.IsCity,
+                    IsHarbor = x.IsHarbor,
+                    Population = x.Population,
+                    Region = x.Region,
+                    VictoryPoints = x.VictoryPoints
+                })
+                .ToList();
+            return villages;
+        }
     }
 }

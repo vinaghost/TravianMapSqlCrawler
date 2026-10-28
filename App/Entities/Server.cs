@@ -1,8 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
-
-namespace App.Entities
+﻿namespace App.Entities
 {
-    [Index(nameof(Url))]
     public class Server
     {
         public int Id { get; set; }

@@ -1,5 +1,6 @@
 ﻿using App;
 
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 
 using Serilog;
@@ -12,8 +13,12 @@ try
 {
     var host = Host.CreateDefaultBuilder(args)
         .UseConsoleLifetime()
-        .ConfigureLogging()
-        .ConfigureServices()
+        .ConfigureServices((hostBuilderContext, services) =>
+        {
+            services.AddSerilog(c => c
+                .ReadFrom.Configuration(hostBuilderContext.Configuration));
+            services.AddHostedService<MainService>();
+        })
         .Build();
 
     await host.RunAsync();

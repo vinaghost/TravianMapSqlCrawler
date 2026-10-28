@@ -5,9 +5,7 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Text.RegularExpressions;
 
-using App.Database;
 using App.Entities;
-using App.Models;
 
 using ConsoleTables;
 
@@ -41,7 +39,7 @@ namespace App
             var httpClient = new HttpClient();
             var serverUrls = await GetServerUrls(httpClient);
 
-            var rawVillageRecords = await GetRawVillages(httpClient, [serverUrls[0]]);
+            var rawVillageRecords = await GetRawVillages(httpClient, serverUrls);
 
             ConsoleTable
                .From(rawVillageRecords.Select(r => new { r.ServerUrl, r.ExecutionTime })

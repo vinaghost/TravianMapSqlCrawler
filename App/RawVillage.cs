@@ -1,4 +1,4 @@
-﻿namespace App.Models
+﻿namespace App
 {
     public sealed record RawVillage(
         int MapId,
