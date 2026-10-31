@@ -4,6 +4,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 
 using Serilog;
+using Serilog.Settings.Configuration;
 
 Log.Logger = new LoggerConfiguration()
     .WriteTo.File("logs/log.txt", rollingInterval: RollingInterval.Day)
@@ -16,7 +17,8 @@ try
         .ConfigureServices((hostBuilderContext, services) =>
         {
             services.AddSerilog(c => c
-                .ReadFrom.Configuration(hostBuilderContext.Configuration));
+                .ReadFrom.Configuration(hostBuilderContext.Configuration,
+        new ConfigurationReaderOptions(ConfigurationAssemblySource.AlwaysScanDllFiles)));
             services.AddHostedService<MainService>();
         })
         .Build();
