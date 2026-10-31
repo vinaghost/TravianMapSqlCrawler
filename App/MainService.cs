@@ -223,6 +223,11 @@ namespace App
             return [.. rawVillageRecords.Where(x => x != default)];
         }
 
+        [JsonSerializable(typeof(TravianResponse))]
+        public partial class TravianResponseJsonContext : JsonSerializerContext
+        {
+        }
+
         public class TravianResponse
         {
             [JsonPropertyName("items")]
@@ -261,7 +266,7 @@ namespace App
 
             var scriptContent = scriptElement.InnerText;
 
-            var result = JsonSerializer.Deserialize<TravianResponse>(scriptContent);
+            var result = JsonSerializer.Deserialize(scriptContent, TravianResponseJsonContext.Default.TravianResponse);
 
             var rows = new List<string>();
             if (result?.Items is not null)
