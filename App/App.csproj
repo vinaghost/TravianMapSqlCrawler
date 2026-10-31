@@ -7,10 +7,10 @@
     <RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
     <PublishAot>true</PublishAot>
     <!--<PublishTrimmed>true</PublishTrimmed>
-    <TrimMode>partial</TrimMode> -->
+    <TrimMode>partial</TrimMode>
     <InvariantGlobalization>true</InvariantGlobalization>
     <StackTraceSupport>false</StackTraceSupport>
-    <MetadataUpdaterSupport>false</MetadataUpdaterSupport>
+    <MetadataUpdaterSupport>false</MetadataUpdaterSupport>-->
     <RuntimeIdentifiers>win-x64;linux-x64</RuntimeIdentifiers>
   </PropertyGroup>
   
