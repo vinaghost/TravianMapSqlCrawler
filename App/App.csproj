@@ -5,8 +5,8 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
-    <PublishAot>true</PublishAot>
-    <!--<PublishTrimmed>true</PublishTrimmed>
+    <!--<PublishAot>true</PublishAot>
+    <PublishTrimmed>true</PublishTrimmed>
     <TrimMode>partial</TrimMode>
     <InvariantGlobalization>true</InvariantGlobalization>
     <StackTraceSupport>false</StackTraceSupport>
