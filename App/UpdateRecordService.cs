@@ -280,7 +280,7 @@ namespace App
                 {
                     Id = x.Key,
                     Name = x.Select(x => x.AllianceName).First(),
-                    PlayerCount = x.Count(),
+                    PlayerCount = x.DistinctBy(x => x.PlayerId).Count(),
                 })
                 .ToList();
             return alliances;
