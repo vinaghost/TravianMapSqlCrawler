@@ -275,7 +275,6 @@ namespace App
         private static List<Alliance> Alliances(List<RawVillage> rawVillages)
         {
             var alliances = rawVillages
-                .DistinctBy(x => x.PlayerId)
                 .GroupBy(x => x.AllianceId)
                 .Select(x => new Alliance
                 {
