@@ -14,6 +14,8 @@ namespace App
 
     public class UpdateRecordService(string connectionString)
     {
+        private static readonly UTF8Encoding Utf8WithoutBom = new(encoderShouldEmitUTF8Identifier: false);
+
         public async Task<Response> Update(string databaseName, List<RawVillage> rawVillages)
         {
             var sw = Stopwatch.StartNew();
@@ -45,7 +47,7 @@ namespace App
             // STEP 2: BUILD STRING STREAM DATA BUFFERS
             // ====================================================================
             using var allianceStream = new MemoryStream();
-            await using (var allianceWriter = new StreamWriter(allianceStream, Encoding.UTF8, leaveOpen: true))
+            await using (var allianceWriter = new StreamWriter(allianceStream, Utf8WithoutBom, leaveOpen: true))
             {
                 foreach (var a in alliances)
                 {
@@ -56,7 +58,7 @@ namespace App
             }
 
             using var playerStream = new MemoryStream();
-            await using (var playerWriter = new StreamWriter(playerStream, Encoding.UTF8, leaveOpen: true))
+            await using (var playerWriter = new StreamWriter(playerStream, Utf8WithoutBom, leaveOpen: true))
             {
                 foreach (var p in players)
                 {
@@ -66,7 +68,7 @@ namespace App
             }
 
             using var villageStream = new MemoryStream();
-            await using (var villageWriter = new StreamWriter(villageStream, Encoding.UTF8, leaveOpen: true))
+            await using (var villageWriter = new StreamWriter(villageStream, Utf8WithoutBom, leaveOpen: true))
             {
                 foreach (var v in villages)
                 {
