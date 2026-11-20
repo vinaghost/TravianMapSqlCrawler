@@ -183,8 +183,15 @@ namespace App
             }
             catch (Exception ex)
             {
-                await transaction.RollbackAsync();
-                Log.Error(ex, "An error occurred during the database update process.");
+                Log.Error(ex, "An error occurred during the database {Database} update process.", databaseName);
+                try
+                {
+                    await transaction.RollbackAsync();
+                }
+                catch (Exception rollbackEx)
+                {
+                    Log.Error(rollbackEx, "Rollback failed after the database {Database} update error. The connection may be broken.", databaseName);
+                }
             }
 
             var server = new Server()
